@@ -1,0 +1,11 @@
+{
+  "slug": "offline-payment-matchbox",
+  "title": "Matchbox Ledger",
+  "territory": "utilities",
+  "user": "A freelancer using an offline invoice tool or spreadsheet who needs to match a downloaded bank/payment CSV to open invoices without handing financial data to another service.",
+  "smallest_useful_product": "Offline CSV importer for invoices and transactions, deterministic/date-amount-reference match suggestions, manual confirmation, and an exportable reconciliation report.",
+  "success_measure": "Pilot users match at least 90% of a month's invoice payments from CSV in under 20 minutes, with every manual match carrying a note.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "All parsing stays in-browser; no bank credentials; preserve imported source files locally only on opt-in; flag but never silently merge ambiguous matches."
+}
