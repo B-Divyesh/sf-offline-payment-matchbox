@@ -1,4 +1,29 @@
-# Matchbox Ledger — build handoff
+# Matchbox Ledger — verification handoff: FAIL
+
+## Independent verifier outcome (2026-08-28)
+
+**FAIL** for candidate `73428f91153c0ebaa4f6fd1a1dda9875ce3bf3a1` at
+https://offline-payment-matchbox.sociobot.in/.
+
+Fresh evidence establishes that the live site matches this candidate byte-for-byte
+for the application shell and assets; this is not a deployment-only failure.
+The candidate passes its declared tests, build, basic accessibility, offline
+reload, update toast, and performance checks, but it must not be released:
+
+- **High:** `2026-99-99` is accepted as a payment date and then causes
+  `RangeError: Invalid time value` while rendering a match, with no actionable
+  recovery.
+- **High:** two invoices competing for one same-amount payment both show an
+  enabled Confirm match action with no ambiguity warning, contrary to the brief’s
+  requirement to flag ambiguous matches.
+- **Medium:** malformed JSON backup structures can throw an uncaught render error.
+- **Medium:** live static responses lack CSP/Permissions-Policy, use 30-second
+  caching for all assets/service-worker/HTML, and serve the manifest as
+  `application/octet-stream`.
+- **Low:** footer touch targets are below 44 px high on a 390 px viewport.
+
+Full commands, positive evidence, reproductions, exact response-policy evidence,
+and required fixes are in `.factory/verification.md`.
 
 ## What shipped
 
