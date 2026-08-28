@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 type Route = { route: string; headers?: Record<string, string> };
 const config = JSON.parse(readFileSync(new URL('../public/staticwebapp.config.json', import.meta.url), 'utf8')) as {
   globalHeaders: Record<string, string>;
+  mimeTypes: Record<string, string>;
   routes: Route[];
 };
 const route = (path: string) => config.routes.find((item) => item.route === path)?.headers ?? {};
@@ -23,5 +24,6 @@ describe('static deployment response policy', () => {
     expect(route('/sw.js')['Cache-Control']).toBe('no-cache');
     expect(route('/asset-manifest.json')['Cache-Control']).toBe('no-cache');
     expect(route('/manifest.webmanifest')['Content-Type']).toContain('application/manifest+json');
+    expect(config.mimeTypes['.webmanifest']).toBe('application/manifest+json');
   });
 });
