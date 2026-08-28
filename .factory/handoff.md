@@ -90,8 +90,29 @@ npm run test:e2e
 
 ## Deployment and live identity
 
-Deployment and live response evidence will be appended immediately after the
-committed repair is uploaded through the work order's static deployment script.
+- Repair commits `54e47560962ce91805b5cb6d8d0367309c67ccc8` and
+  `72f35dc97d07fe83a83917082bdf824323988440` were pushed to `origin/main`.
+- `/opt/fleet/lib/deploy-static.sh offline-payment-matchbox /work/repo/dist`
+  completed against the existing Central US Azure Static Web App. Final
+  deployment ID: `b355568f-fced-4de6-9279-9ae7955fe895`.
+- Custom-domain verification returned HTTPS 200 at
+  <https://offline-payment-matchbox.sociobot.in/>. The factory verifier found
+  zero browser console/page errors and the expected title, language, single
+  `h1`, main landmark, image alternatives, and named buttons.
+- Live reproductions pass: impossible dates show the row-2 error and retain the
+  mapping panel with zero page errors; the shared payment shows two ambiguity
+  warnings and zero Confirm match buttons; malformed `[null]` backup data is
+  rejected while the existing workspace remains; fresh offline reload includes
+  the 1200 px artwork.
+- Live 390 px footer control boxes are Privacy 52.45 × 44, Terms 44 × 44, and
+  Matchbox Plus 108.94 × 44 CSS px.
+- Live HTML, service worker, and manifests send `Cache-Control: no-cache`.
+  Hashed JS, CSS, and WebP send `public, max-age=31536000, immutable`. The web
+  manifest sends `application/manifest+json`. CSP, Permissions-Policy,
+  `X-Frame-Options: DENY`, and `X-Content-Type-Options: nosniff` are present.
+- SHA-256 identity matched local `dist/` for `/`, `/privacy/`, `/terms/`, the
+  hashed app JS/CSS/artwork, `/sw.js`, `/manifest.webmanifest`, and
+  `/asset-manifest.json`.
 
 ## Known product-scope gaps
 
