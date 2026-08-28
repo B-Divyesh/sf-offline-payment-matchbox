@@ -1,0 +1,9 @@
+@import './style.css';
+
+.legal-header { min-height: 72px; padding: 12px clamp(20px, 5vw, 72px); display: flex; align-items: center; border-bottom: 1px solid var(--hairline); }
+.legal-main { width: min(760px, calc(100% - 40px)); margin: 0 auto; padding: clamp(56px, 9vw, 100px) 0; overflow: visible; }
+.legal-main h1 { font-size: clamp(2.8rem, 8vw, 5rem); }
+.legal-main h2 { margin: 44px 0 14px; font-family: Georgia, serif; font-size: 1.7rem; }
+.legal-main p, .legal-main li { max-width: 68ch; line-height: 1.7; }
+.legal-main .updated { color: var(--cobalt); font-size: .85rem; font-weight: 700; }
+.legal-footer { padding-bottom: 40px; grid-template-columns: 1fr; }
