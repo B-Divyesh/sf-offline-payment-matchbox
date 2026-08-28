@@ -29,4 +29,22 @@ describe('deterministic matching', () => {
     const ledger: Ledger = { invoices: [invoice], transactions: [payment('a', 'INV-104')], matches: [{ id: 'm', invoiceId: 'other', transactionId: 'a', method: 'manual', note: 'Checked', matchedAt: '' }], updatedAt: '' };
     expect(suggestionsFor(invoice, ledger)).toEqual([]);
   });
+
+  it('flags one payment competing for two equally plausible invoices as ambiguous in both directions', () => {
+    const other = { ...invoice, id: 'INV-105', customer: 'Atlas Works' };
+    const sharedPayment = payment('shared', 'Payment received');
+    const ledger: Ledger = { invoices: [invoice, other], transactions: [sharedPayment], matches: [], updatedAt: '' };
+
+    expect(suggestionsFor(invoice, ledger)[0]).toMatchObject({ transaction: sharedPayment, ambiguous: true, reasons: expect.arrayContaining(['payment also fits another open invoice']) });
+    expect(suggestionsFor(other, ledger)[0]).toMatchObject({ transaction: sharedPayment, ambiguous: true });
+  });
+
+  it('keeps a clearly referenced invoice suggestion unambiguous despite another equal-amount invoice', () => {
+    const other = { ...invoice, id: 'INV-105', customer: 'Atlas Works' };
+    const referenced = payment('shared', 'Payment INV-104 Northstar Studio');
+    const ledger: Ledger = { invoices: [invoice, other], transactions: [referenced], matches: [], updatedAt: '' };
+
+    expect(suggestionsFor(invoice, ledger)[0]?.ambiguous).toBe(false);
+    expect(suggestionsFor(other, ledger)[0]).toMatchObject({ ambiguous: true, reasons: expect.arrayContaining(['payment also fits another open invoice']) });
+  });
 });

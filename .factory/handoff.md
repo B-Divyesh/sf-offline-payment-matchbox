@@ -1,69 +1,105 @@
-# Matchbox Ledger — verification handoff: FAIL
+# Matchbox Ledger — repair handoff
 
-## Independent verifier outcome (2026-08-28)
+## Outcome
 
-**FAIL** for candidate `73428f91153c0ebaa4f6fd1a1dda9875ce3bf3a1` at
-https://offline-payment-matchbox.sociobot.in/.
+Release-blocking findings from verifier report commit
+`e6b2e04b0f2ff35d7e6677c0eb2b07bdcdbea032` for candidate
+`73428f91153c0ebaa4f6fd1a1dda9875ce3bf3a1` are repaired. The researched
+brief, static PWA artifact class, local-first storage, free workflow, and Plus
+license behavior are unchanged.
 
-Fresh evidence establishes that the live site matches this candidate byte-for-byte
-for the application shell and assets; this is not a deployment-only failure.
-The candidate passes its declared tests, build, basic accessibility, offline
-reload, update toast, and performance checks, but it must not be released:
+## Repairs
 
-- **High:** `2026-99-99` is accepted as a payment date and then causes
-  `RangeError: Invalid time value` while rendering a match, with no actionable
-  recovery.
-- **High:** two invoices competing for one same-amount payment both show an
-  enabled Confirm match action with no ambiguity warning, contrary to the brief’s
-  requirement to flag ambiguous matches.
-- **Medium:** malformed JSON backup structures can throw an uncaught render error.
-- **Medium:** live static responses lack CSP/Permissions-Policy, use 30-second
-  caching for all assets/service-worker/HTML, and serve the manifest as
-  `application/octet-stream`.
-- **Low:** footer touch targets are below 44 px high on a 390 px viewport.
+- CSV dates are normalized only when they represent a real calendar date.
+  Impossible payment dates such as `2026-99-99` now produce the existing
+  row-specific, actionable import error without mutating the ledger or throwing
+  a page error. Invalid mapped invoice and due dates are rejected as well.
+- Matching now checks contention in both directions. Similar payments competing
+  for one invoice and similarly plausible invoices competing for one payment are
+  marked “Needs a closer look,” have no quick-confirm action, and require the
+  auditable manual path. If one invoice has materially stronger reference
+  evidence, only that invoice remains eligible for quick confirmation; weaker
+  contenders are blocked.
+- Backup import validates complete invoice, payment, match, retained-source, and
+  timestamp schemas, actual dates, uniqueness, and match references before
+  replacing the active workspace. Invalid JSON structures retain current data
+  and explain that nothing changed.
+- Production JS, CSS, and artwork now use content-hashed names. The `matchbox-v6`
+  service worker reads the generated asset manifest so the entire hashed shell,
+  including welcome artwork and legal styles, remains available offline.
+- Azure Static Web Apps configuration now sends a restrictive CSP,
+  Permissions-Policy, frame protection, and `nosniff`; hashed assets receive a
+  one-year immutable policy; HTML, the service worker, and manifests revalidate;
+  the web manifest is declared as `application/manifest+json`.
+- Footer Privacy, Terms, and Matchbox Plus controls are at least 44 × 44 CSS px
+  on the 390 px layout.
 
-Full commands, positive evidence, reproductions, exact response-policy evidence,
-and required fixes are in `.factory/verification.md`.
+## Regression coverage
 
-## What shipped
+- Unit tests reproduce impossible ISO-shaped payment and invoice dates.
+- Matcher tests cover equal reverse contention and the strong-reference/weak-
+  contender case.
+- Backup tests cover the verifier's `[null]` payload, impossible dates, full
+  valid records, and broken references.
+- Response-policy tests lock CSP, Permissions-Policy, immutable asset caching,
+  no-cache entry points, and manifest MIME configuration.
+- Playwright reproduces all three functional verifier cases and asserts no page
+  errors, workspace retention, visible ambiguity warnings, absent quick-confirm
+  actions, and 390 px touch target dimensions.
+- Browser coverage also retains the complete reconciliation/export flow, manual
+  audit-note flow, persistence, legal routes, keyboard dialog behavior, reduced
+  motion, desktop/mobile axe scans, default same-origin privacy, and fresh
+  offline artwork reload.
 
-- A production Vite + TypeScript PWA for reconciling open-invoice and bank/payment CSV exports entirely in the browser.
-- Quote-aware CSV parsing, common-heading detection, explicit column mapping, locale-style amount parsing, input validation, duplicate invoice detection, and downloadable sample files.
-- Deterministic suggestions using exact amount, currency, invoice reference, customer reference, and date distance. Close-scoring alternatives are marked ambiguous and cannot use the quick-confirm path.
-- Manual payment selection with a required audit note; all matches are reversible.
-- CSV reports covering confirmed matches, open invoices, and unused payments. JSON workspace backup/import is also available.
-- IndexedDB persistence for structured records. Raw CSV source text is retained only with an import-time opt-in.
-- A complete free workflow plus a $19 one-time Matchbox Plus license contract: Sociobot checkout, return-token capture, daily verification cache, offline optimistic access, restore-by-token, and quiet invalid/offline states. Plus adds batch confirmation and reusable mappings; exports and accessibility are never gated.
-- Installable manifest, 192/512 maskable icons, versioned service worker, update toast, and verified offline refresh with persisted work.
-- Responsive 390 px layout, keyboard-native controls/dialogs, visible focus, reduced-motion handling, status announcements, and standalone privacy/terms pages.
-- Original generated ceramic still-life artwork with prompt sidecar and provenance in `.factory/design.md`; production WebP is 43 KB.
-
-## Run and verify
+## Verification evidence (2026-08-28)
 
 ```bash
 npm ci
+npm audit --audit-level=high
 npm test
 npm run build
+node --check dist/sw.js
 npm run test:e2e
 ```
 
-Build output is exactly `./dist`, with `dist/index.html` at its root.
+- Clean install: 55 packages; audit: 0 vulnerabilities.
+- Unit/config: 18/18 passed across 4 files.
+- Type/build: `tsc --noEmit` and Vite production build passed; `dist/index.html`
+  exists at the required root.
+- Browser: 17/17 Playwright checks passed in Chromium 1.58.2 at desktop and
+  390 × 844 mobile sizes.
+- Axe: zero serious/critical WCAG 2 A/AA/2.1 AA findings on `/`, `/privacy/`,
+  and `/terms/` at both desktop and mobile sizes.
+- Factory URL verifier: title present, `lang=en`, one `h1`, main landmark,
+  complete image alt text and button names, and zero console/page errors.
+- Keyboard: skip link is first and visibly focused; Enter reaches `#main`; the
+  Plus dialog receives focus and closes with Escape. Reduced-motion duration is
+  at most 0.01 ms.
+- Privacy: the default workflow made only same-origin requests; no analytics,
+  remote fonts, bank calls, or billing calls occurred without a license.
+- PWA: persisted reconciliation survives offline reload; a fresh welcome screen
+  reloads offline with its hashed artwork; a synthetic `matchbox-v7` update
+  displayed “An app update is ready.” over the active `matchbox-v6` controller.
+- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100,
+  SEO 100; FCP 1.0 s, LCP 1.3 s, TBT 0 ms, CLS 0.
+- Production payload: app JS 31,450 bytes raw / 10,835 gzip; app CSS 15,341 /
+  4,321; legal CSS 15,900 / 4,435; artwork 43,436 bytes. Budgets remain well
+  below 200/50/300 KB.
+- Current screenshots, Lighthouse JSON, and factory verification output are in
+  `.factory/evidence/`.
 
-Verification completed on 2026-08-28:
+## Deployment and live identity
 
-- Unit tests: 8/8 passed (CSV parsing/validation and deterministic matcher).
-- Playwright: 6/6 passed (complete import → match → CSV export flow, required manual note, IndexedDB persistence, offline reload, 390 px legal routes).
-- Axe via Playwright: 0 serious or critical WCAG 2 A/AA/2.1 AA violations on `/`, `/privacy/`, and `/terms/`.
-- Factory `verify-url.sh`: title present, `lang=en`, one `h1`, main landmark present, zero missing image alts, zero unlabeled buttons, zero console/page errors.
-- Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; FCP 0.9 s, LCP 1.6 s, total blocking time 0 ms, CLS 0.
-- Production payload: app JavaScript 28.2 KB raw / 9.9 KB gzip; app CSS 15.2 KB raw / 4.3 KB gzip; hero WebP 43.4 KB. All are comfortably inside the 200/50/300 KB budgets.
-- Desktop and 390 × 844 screenshots plus machine-readable reports are in `.factory/evidence/`.
-- `npm audit`: 0 vulnerabilities after upgrading the Vite/Vitest toolchain.
+Deployment and live response evidence will be appended immediately after the
+committed repair is uploaded through the work order's static deployment script.
 
-## Known gaps and next steps
+## Known product-scope gaps
 
-- CSV is the only financial import format in v1; OFX, QIF, PDF, live bank feeds, currency conversion, split payments, and partial payments are intentionally out of scope.
-- The app keeps one current workspace. Users should export a JSON backup before starting another month.
-- Date parsing supports ISO, `DD/MM/YYYY`, `DD-MM-YYYY`, and browser-recognized textual dates. Ambiguous numeric dates are treated day-first and should be confirmed in the mapping/review flow.
-- The production license endpoints are implemented, but no real purchase token is committed or used in automated tests. The factory should verify checkout/return URLs after registering the product.
-- The static host should set long immutable caching for `/assets/*` and `no-cache` for `/sw.js` and HTML. The service worker itself remains sufficient for offline use.
+- CSV remains the only financial import format in v1. OFX, QIF, PDF, live bank
+  feeds, currency conversion, split payments, and partial payments are out of
+  scope.
+- The app keeps one active workspace. Export a JSON backup before starting a new
+  month.
+- Production license checkout still requires a real Sociobot-issued token for a
+  purchase-path smoke test; automated tests intentionally contain no token or
+  payment credentials.

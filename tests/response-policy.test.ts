@@ -1,0 +1,27 @@
+import { readFileSync } from 'node:fs';
+import { describe, expect, it } from 'vitest';
+
+type Route = { route: string; headers?: Record<string, string> };
+const config = JSON.parse(readFileSync(new URL('../public/staticwebapp.config.json', import.meta.url), 'utf8')) as {
+  globalHeaders: Record<string, string>;
+  routes: Route[];
+};
+const route = (path: string) => config.routes.find((item) => item.route === path)?.headers ?? {};
+
+describe('static deployment response policy', () => {
+  it('ships restrictive browser policies for the local financial workspace', () => {
+    expect(config.globalHeaders['Content-Security-Policy']).toContain("default-src 'self'");
+    expect(config.globalHeaders['Content-Security-Policy']).toContain("frame-ancestors 'none'");
+    expect(config.globalHeaders['Permissions-Policy']).toContain('camera=()');
+    expect(config.globalHeaders['X-Frame-Options']).toBe('DENY');
+  });
+
+  it('separates immutable hashed assets from revalidated app entry points', () => {
+    expect(route('/assets/*')['Cache-Control']).toContain('max-age=31536000');
+    expect(route('/assets/*')['Cache-Control']).toContain('immutable');
+    expect(route('/')['Cache-Control']).toBe('no-cache');
+    expect(route('/sw.js')['Cache-Control']).toBe('no-cache');
+    expect(route('/asset-manifest.json')['Cache-Control']).toBe('no-cache');
+    expect(route('/manifest.webmanifest')['Content-Type']).toContain('application/manifest+json');
+  });
+});

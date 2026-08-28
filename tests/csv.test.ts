@@ -23,4 +23,14 @@ describe('CSV imports', () => {
     const csv = parseCsv('id,amount\nINV-1,10\nINV-1,10');
     expect(() => invoicesFromCsv(csv, suggestInvoiceMapping(csv.headers))).toThrow(/appears more than once/);
   });
+
+  it('rejects ISO-shaped payment dates that are not real calendar dates with the source row', () => {
+    const csv = parseCsv('date,amount,description\n2026-99-99,100,test');
+    expect(() => transactionsFromCsv(csv, suggestTransactionMapping(csv.headers))).toThrow('Payment row 2 needs a valid date and amount.');
+  });
+
+  it('rejects impossible optional invoice dates instead of silently dropping them', () => {
+    const csv = parseCsv('invoice_id,invoice_date,amount\nINV-9,2026-02-30,100');
+    expect(() => invoicesFromCsv(csv, suggestInvoiceMapping(csv.headers))).toThrow('Invoice row 2 needs a valid invoice date.');
+  });
 });

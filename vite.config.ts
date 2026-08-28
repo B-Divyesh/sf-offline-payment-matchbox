@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 export default defineConfig({
   build: {
     target: 'es2022',
+    manifest: 'asset-manifest.json',
     modulePreload: { polyfill: false },
     rollupOptions: {
       input: {
@@ -12,9 +13,9 @@ export default defineConfig({
         terms: resolve(import.meta.dirname, 'terms/index.html'),
       },
       output: {
-        entryFileNames: 'assets/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash][extname]',
       },
     },
   },

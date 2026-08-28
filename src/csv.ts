@@ -1,4 +1,5 @@
 import type { Invoice, InvoiceMapping, ParsedCsv, Transaction, TransactionMapping } from './types';
+import { normalizedDate } from './dates';
 
 export function parseCsv(text: string): ParsedCsv {
   const source = text.replace(/^\uFEFF/, '');
@@ -87,16 +88,6 @@ export function parseAmount(value: string): number {
   return negative ? -amount : amount;
 }
 
-function normalizedDate(value: string): string {
-  if (!value.trim()) return '';
-  const iso = value.trim().match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
-  if (iso) return `${iso[1]}-${iso[2]?.padStart(2, '0')}-${iso[3]?.padStart(2, '0')}`;
-  const common = value.trim().match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-  if (common) return `${common[3]}-${common[2]?.padStart(2, '0')}-${common[1]?.padStart(2, '0')}`;
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? '' : parsed.toISOString().slice(0, 10);
-}
-
 export function invoicesFromCsv(csv: ParsedCsv, mapping: InvoiceMapping): Invoice[] {
   if (!mapping.id || !mapping.amount) throw new Error('Choose columns for invoice number and amount.');
   const invoices = csv.rows.map((row, index) => ({
@@ -110,6 +101,10 @@ export function invoicesFromCsv(csv: ParsedCsv, mapping: InvoiceMapping): Invoic
   }));
   const bad = invoices.find((invoice) => !invoice.id || !Number.isFinite(invoice.amount));
   if (bad) throw new Error(`Invoice row ${bad.sourceRow} needs a number and a valid amount.`);
+  const invalidInvoiceDate = mapping.date && invoices.find((invoice, index) => Boolean(csv.rows[index]?.[mapping.date]?.trim()) && !invoice.date);
+  if (invalidInvoiceDate) throw new Error(`Invoice row ${invalidInvoiceDate.sourceRow} needs a valid invoice date.`);
+  const invalidDueDate = mapping.dueDate && invoices.find((invoice, index) => Boolean(csv.rows[index]?.[mapping.dueDate]?.trim()) && !invoice.dueDate);
+  if (invalidDueDate) throw new Error(`Invoice row ${invalidDueDate.sourceRow} needs a valid due date.`);
   const duplicate = invoices.find((invoice, index) => invoices.findIndex((other) => other.id === invoice.id) !== index);
   if (duplicate) throw new Error(`Invoice number “${duplicate.id}” appears more than once.`);
   return invoices;

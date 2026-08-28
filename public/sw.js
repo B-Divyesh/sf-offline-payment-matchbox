@@ -1,6 +1,6 @@
-const VERSION = 'matchbox-v5';
+const VERSION = 'matchbox-v6';
 const PAGES = ['/', '/privacy/', '/terms/'];
-const SHELL = ['/offline.html', '/manifest.webmanifest', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/assets/matchbox-trays.webp', '/assets/app.js', '/assets/app.css', '/assets/legal.css'];
+const SHELL = ['/offline.html', '/manifest.webmanifest', '/asset-manifest.json', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -13,6 +13,12 @@ self.addEventListener('install', (event) => {
     };
     for (const path of SHELL) await cacheFresh(path);
     const assets = new Set();
+    const manifest = await (await caches.match('/asset-manifest.json')).json();
+    for (const entry of Object.values(manifest)) {
+      if (entry.file) assets.add(`/${entry.file}`);
+      for (const path of entry.css || []) assets.add(`/${path}`);
+      for (const path of entry.assets || []) assets.add(`/${path}`);
+    }
     for (const path of PAGES) {
       const response = await cacheFresh(path);
       const source = await response.text();

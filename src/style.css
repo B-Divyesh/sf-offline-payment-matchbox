@@ -151,8 +151,9 @@ td strong, td small { display: block; }
 footer { padding: 36px clamp(20px, 5vw, 72px) 84px; display: grid; grid-template-columns: 1fr auto; gap: 8px 32px; border-top: 1px solid var(--hairline); }
 footer p { margin: 0; }
 footer p:nth-child(2) { display: flex; gap: 20px; align-items: center; }
+footer a, footer .link-button { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .art-credit { grid-column: 1 / -1; font-size: .78rem; }
-.link-button { min-height: 0; color: var(--cobalt); font-weight: 400; }
+.link-button { color: var(--cobalt); font-weight: 400; }
 .network-pill { position: fixed; z-index: 20; right: max(14px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); padding: 9px 13px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--hairline); border-radius: 999px; background: var(--porcelain); box-shadow: var(--shadow); color: var(--ash); font-size: .78rem; }
 .network-pill span { width: 8px; height: 8px; border-radius: 50%; background: var(--lichen); }
 .network-pill.is-offline span { background: var(--ochre); }

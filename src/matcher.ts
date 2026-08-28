@@ -56,14 +56,29 @@ export function scorePair(invoice: Invoice, transaction: Transaction): Omit<Cand
 
 export function suggestionsFor(invoice: Invoice, ledger: Ledger): Candidate[] {
   const used = new Set(ledger.matches.map((match) => match.transactionId));
-  const candidates = ledger.transactions
+  const candidatesFor = (item: Invoice) => ledger.transactions
     .filter((transaction) => !used.has(transaction.id))
-    .map((transaction) => ({ transaction, ...scorePair(invoice, transaction), ambiguous: false }))
+    .map((transaction) => ({ transaction, ...scorePair(item, transaction), ambiguous: false }))
     .filter((candidate) => candidate.score >= 60)
     .sort((a, b) => b.score - a.score || a.transaction.date.localeCompare(b.transaction.date));
+  const candidates = candidatesFor(invoice);
   if (candidates.length > 1 && candidates[0] && candidates[1] && candidates[0].score - candidates[1].score <= 8) {
     candidates[0].ambiguous = true;
     candidates[1].ambiguous = true;
+  }
+  const top = candidates[0];
+  if (top) {
+    const matchedInvoices = new Set(ledger.matches.map((match) => match.invoiceId));
+    const paymentCompetes = ledger.invoices
+      .filter((other) => other.id !== invoice.id && !matchedInvoices.has(other.id))
+      .some((other) => {
+        const otherTop = candidatesFor(other)[0];
+        return otherTop?.transaction.id === top.transaction.id && otherTop.score >= top.score - 8;
+      });
+    if (paymentCompetes) {
+      top.ambiguous = true;
+      top.reasons.push('payment also fits another open invoice');
+    }
   }
   return candidates;
 }

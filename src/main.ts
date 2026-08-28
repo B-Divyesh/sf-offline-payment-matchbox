@@ -1,5 +1,8 @@
 import './style.css';
+import trayArtwork from './assets/matchbox-trays.webp';
+import { parseLedgerBackup } from './backup';
 import { escapeCsv, invoicesFromCsv, parseCsv, suggestInvoiceMapping, suggestTransactionMapping, transactionsFromCsv } from './csv';
+import { isCalendarDate } from './dates';
 import { clearLedger, emptyLedger, loadLedger, saveLedger } from './db';
 import { checkoutUrl, initLicense, restoreLicense, subscribeLicense, type LicenseState } from './license';
 import { suggestionsFor, summarize } from './matcher';
@@ -30,7 +33,7 @@ const money = (amount: number, currency = '') => {
     return `${amount.toFixed(2)} ${currency}`.trim();
   }
 };
-const dateLabel = (value: string) => value ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)) : 'No date';
+const dateLabel = (value: string) => value && isCalendarDate(value) ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`)) : 'No date';
 const html = (value: string) => value.replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character] ?? character);
 
 function icon(name: 'lock' | 'file' | 'link' | 'check' | 'warning' | 'download' | 'spark'): string {
@@ -68,7 +71,7 @@ function render(): void {
           <p class="lede">Match downloaded payments to open invoices without uploading financial data, connecting a bank, or changing invoicing tools.</p>
           <div class="privacy-stamp">${icon('lock')} <span><strong>Private by design</strong><small>Parsing and matching stay in this browser</small></span></div>
         </div>
-        ${hasFiles ? '' : '<figure class="hero-art"><img src="/assets/matchbox-trays.webp" width="1200" height="800" alt="Two porcelain sorting trays connected by one cobalt matchstick" fetchpriority="high" decoding="async"><figcaption>Two lists, one deliberate match.</figcaption></figure>'}
+        ${hasFiles ? '' : `<figure class="hero-art"><img src="${trayArtwork}" width="1200" height="800" alt="Two porcelain sorting trays connected by one cobalt matchstick" fetchpriority="high" decoding="async"><figcaption>Two lists, one deliberate match.</figcaption></figure>`}
       </section>
 
       <section class="workbench" id="workspace" aria-labelledby="workspace-title">
@@ -147,7 +150,7 @@ function invoiceRow(invoice: Ledger['invoices'][number]): string {
   return `<article class="match-row ${top.ambiguous ? 'ambiguous' : ''}">
     <div class="invoice-cell"><span class="status-dot"></span><div><strong>${html(invoice.id)}</strong><small>${html(invoice.customer || 'Unnamed customer')} · ${dateLabel(invoice.date)}</small></div><b>${money(invoice.amount, invoice.currency)}</b></div>
     <div class="match-bridge" aria-hidden="true">${icon(top.ambiguous ? 'warning' : 'link')}</div>
-    <div class="suggestion-cell"><div><p class="suggestion-label">${top.ambiguous ? 'Needs a closer look' : top.score >= 90 ? 'Strong suggestion' : 'Possible match'}</p><strong>${dateLabel(top.transaction.date)} · ${money(top.transaction.amount, top.transaction.currency)}</strong><small>${html(top.transaction.reference || 'No payment reference')}</small><p class="reason">${top.reasons.join(' · ')}</p></div><div class="row-actions">${top.ambiguous ? '' : `<button class="primary-button" type="button" data-confirm="${html(invoice.id)}" data-transaction="${html(top.transaction.id)}">Confirm match</button>`}<button class="secondary-button" type="button" data-manual="${html(invoice.id)}">${top.ambiguous ? `Compare ${candidates.length} payments` : 'Choose another'}</button></div></div>
+    <div class="suggestion-cell"><div><p class="suggestion-label">${top.ambiguous ? 'Needs a closer look' : top.score >= 90 ? 'Strong suggestion' : 'Possible match'}</p><strong>${dateLabel(top.transaction.date)} · ${money(top.transaction.amount, top.transaction.currency)}</strong><small>${html(top.transaction.reference || 'No payment reference')}</small><p class="reason">${top.reasons.join(' · ')}</p></div><div class="row-actions">${top.ambiguous ? '' : `<button class="primary-button" type="button" data-confirm="${html(invoice.id)}" data-transaction="${html(top.transaction.id)}">Confirm match</button>`}<button class="secondary-button" type="button" data-manual="${html(invoice.id)}">${top.ambiguous ? candidates.length > 1 ? `Compare ${candidates.length} payments` : 'Review payment manually' : 'Choose another'}</button></div></div>
   </article>`;
 }
 
@@ -254,8 +257,7 @@ app.addEventListener('change', async (event) => {
   try {
     if (input.dataset.fileKind && input.files?.[0]) await handleFile(input.files[0], input.dataset.fileKind as ImportKind);
     if (input.id === 'backup-input' && input.files?.[0]) {
-      const restored = JSON.parse(await input.files[0].text()) as Ledger;
-      if (!Array.isArray(restored.invoices) || !Array.isArray(restored.transactions) || !Array.isArray(restored.matches)) throw new Error('This is not a Matchbox workspace backup.');
+      const restored = parseLedgerBackup(JSON.parse(await input.files[0].text()) as unknown);
       ledger = restored;
       await persist('Workspace backup imported.');
     }

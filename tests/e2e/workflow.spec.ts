@@ -53,3 +53,83 @@ test('legal pages and mobile layout retain landmarks', async ({ page }) => {
   await page.goto('/terms/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Terms of use.');
 });
+
+test('rejects an impossible payment date without a page error and keeps the import recoverable', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/');
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoice.csv', mimeType: 'text/csv', buffer: Buffer.from('invoice_id,amount\nINV-9,100') });
+  await page.getByRole('button', { name: 'Import invoices' }).click();
+  await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'invalid-date.csv', mimeType: 'text/csv', buffer: Buffer.from('date,amount,description\n2026-99-99,100,test') });
+
+  const dialogs: string[] = [];
+  page.once('dialog', (dialog) => { dialogs.push(dialog.message()); void dialog.dismiss(); });
+  await page.getByRole('button', { name: 'Import payments' }).click();
+
+  expect(dialogs).toEqual(['Payment row 2 needs a valid date and amount.']);
+  await expect(page.getByRole('heading', { name: 'invalid-date.csv' })).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('blocks quick confirmation when two invoices compete for one payment', async ({ page }) => {
+  const competingInvoices = 'invoice_id,customer,invoice_date,amount,currency\nINV-201,Alpha,2026-08-01,100.00,USD\nINV-202,Beta,2026-08-01,100.00,USD';
+  const sharedPayment = 'date,amount,description,currency\n2026-08-08,100.00,Payment received,USD';
+  await page.goto('/');
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'competing.csv', mimeType: 'text/csv', buffer: Buffer.from(competingInvoices) });
+  await page.getByRole('button', { name: 'Import invoices' }).click();
+  await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'shared.csv', mimeType: 'text/csv', buffer: Buffer.from(sharedPayment) });
+  await page.getByRole('button', { name: 'Import payments' }).click();
+
+  await expect(page.getByText('Needs a closer look')).toHaveCount(2);
+  await expect(page.getByText('payment also fits another open invoice')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Confirm match' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Review payment manually' })).toHaveCount(2);
+});
+
+test('rejects a malformed backup, retains the current workspace, and reports no page error', async ({ page }) => {
+  const pageErrors: string[] = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  await page.goto('/');
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoice.csv', mimeType: 'text/csv', buffer: Buffer.from('invoice_id,amount\nINV-SAFE,100') });
+  await page.getByRole('button', { name: 'Import invoices' }).click();
+
+  const dialogPromise = page.waitForEvent('dialog');
+  await page.locator('#backup-input').setInputFiles({ name: 'malformed.json', mimeType: 'application/json', buffer: Buffer.from('{"invoices":[null],"transactions":[],"matches":[]}') });
+  const dialog = await dialogPromise;
+
+  expect(dialog.message()).toMatch(/invoice 1.*current workspace was not changed/i);
+  await dialog.dismiss();
+  await expect(page.getByText('1 row loaded locally').first()).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test('all footer controls meet the 44px touch target at 390px', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const sizes = await page.locator('footer a, footer button').evaluateAll((controls) => controls.map((control) => {
+    const box = control.getBoundingClientRect();
+    return { label: control.textContent?.trim(), width: box.width, height: box.height };
+  }));
+  expect(sizes.length).toBeGreaterThan(0);
+  for (const size of sizes) {
+    expect(size.width, `${size.label} width`).toBeGreaterThanOrEqual(44);
+    expect(size.height, `${size.label} height`).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test('pre-caches the hashed welcome artwork for a fresh offline reload', async ({ page, context }) => {
+  await page.goto('/');
+  await expect(page.locator('.hero-art img')).toHaveJSProperty('complete', true);
+  await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Bring two CSVs');
+  await expect(page.locator('.hero-art img')).toHaveJSProperty('naturalWidth', 1200);
+});
+
+test('makes only same-origin requests in the default private workflow', async ({ page }) => {
+  const origins = new Set<string>();
+  page.on('request', (request) => origins.add(new URL(request.url()).origin));
+  await page.goto('/', { waitUntil: 'networkidle' });
+  expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+});
