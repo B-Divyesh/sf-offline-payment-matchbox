@@ -1,38 +1,62 @@
-# Matchbox Ledger — independent verification handoff
+# Matchbox Ledger — independent verification 4 handoff
 
 ## Outcome: FAIL
 
-Candidate `5e139a40afe65548921329e751b39417a9adeef6` was independently tested on 2026-08-28 from a fresh clean checkout and against <https://offline-payment-matchbox.sociobot.in/>. All 16 served static build resources byte-match the fresh candidate build, so this is not a stale-deployment result.
+Candidate `5e139a40afe65548921329e751b39417a9adeef6` at
+<https://offline-payment-matchbox.sociobot.in/> is **not releasable**. Fresh
+hash comparisons prove the live deployment is the candidate; this is not a
+deployment-only failure.
 
-The free reconciliation workflow, recovery paths, export, local-first privacy, PWA offline/update behavior, desktop and 390 px axe checks, performance budget, headers, caching, and current license-verifier rate limit pass. Release is blocked because the visible $19 one-time Matchbox Plus checkout URL returns HTTP 404 rather than hosted checkout.
+No product source was modified. This verification adds only the independent
+report and reproducible evidence under `.factory/`.
 
-Fresh rate-limit evidence supersedes the earlier report: the first 429 was request 31 in a 200-request sequential burst, with Retry-After: 2. A 300-request concurrency-50 burst returned 297 HTTP 429 responses. Rate limiting is no longer a release finding.
+## Release blockers
 
-Also reproduced: Medium manual-dialog Escape focus loss, Medium 800-pixel portrait cropping of intended landscape welcome art, and Low sub-44-pixel header links. Exact evidence, tested URL/commit, and remediation are in .factory/verification-3.md.
+1. `.factory/claims.json` is missing and the test suite has no `@claim:*` tests.
+   Public privacy, offline, export, and local-storage claims are unlisted.
+2. The cold first screen does not name freelancers or present a first action.
+   There is no “Try it with sample data” control.
+3. `/demo` is the normal empty app using the real `matchbox-ledger` IndexedDB
+   namespace. It has no sample data, banner, reset/start-real controls, or
+   `.factory/demo.md`.
 
-## Verification summary
+Additional findings: license restore closes its dialog and hides the result;
+the mobile wordmark is only 30 px high; a real 404, sitemap, canonical/social
+metadata, standard footer/build ID, and copy audit are absent.
 
-```text
-npm ci                         PASS — 55 packages, 0 vulnerabilities
-npm audit --audit-level=high   PASS — 0 vulnerabilities
-npm test                       PASS — 18/18
-npm run build                  PASS — TypeScript + production Vite build
-node --check dist/sw.js        PASS
-npm run test:e2e               PASS — 17/17
-live artifact SHA-256 parity   PASS — all 16 served build resources
-live core/private workflow     PASS
-live offline reload/update     PASS
-live axe desktop/mobile        PASS — 0 serious/critical findings
-live Lighthouse mobile         PASS — 98 / 100 / 100 / 100
-production checkout            FAIL — HTTP 404
-API burst rate limit           PASS — 429 from request 31, Retry-After: 2
+Full evidence and severities are in `.factory/verification-4.md`.
+
+## What passed
+
+- Clean install/audit: 0 vulnerabilities.
+- Unit/config tests: 18/18; Playwright: 17/17.
+- TypeScript and exact production build passed; `dist/` exists.
+- Independent normal, manual-note, export, invalid-input, persistence, privacy,
+  desktop/mobile, offline, and service-worker-update flows passed.
+- Axe: 0 violations on `/`, `/demo`, `/privacy/`, and `/terms/` at desktop and
+  390 px. No workflow console/page errors.
+- Lighthouse mobile: 100 performance, 100 accessibility, 100 best practices,
+  100 SEO; LCP 1.3 s, TBT 0 ms, CLS 0, 78,597 bytes transferred.
+- Live response policies and immutable hashed-asset caching passed.
+- Billing verify rate limit: request 31 returned 429 with `Retry-After: 3`.
+- Eleven local/live production artifact hashes matched exactly.
+- The prior checkout 404 does not reproduce: the Sociobot checkout endpoint now
+  returns HTTP 303 to hosted Dodo checkout.
+
+## Re-run
+
+```bash
+git checkout --detach 5e139a40afe65548921329e751b39417a9adeef6
+npm ci
+npm audit --audit-level=high
+npm test
+npm run build
+node --check dist/sw.js
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers npm run test:e2e
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node .factory/evidence/verification-4-browser.mjs
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node .factory/evidence/verification-4-sw-update.mjs
+PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node .factory/evidence/verification-4-billing.mjs
 ```
 
-No product code, deployment, infrastructure, DNS, or billing state was changed. Only this handoff and .factory/verification-3.md were written.
-
-## Required next steps
-
-1. Enable the product in the Sociobot billing engine and complete a hosted-checkout/return-token smoke test.
-2. Restore keyboard focus after manually closing the match dialog.
-3. Render welcome artwork at its 3:2 landscape ratio and enlarge header link hit areas to at least 44 x 44 CSS px.
-4. Re-run live purchase and accessibility checks before changing the release decision to PASS.
+The required next step is a new builder candidate that resolves every release
+blocker above, followed by independent verification from a fresh clone.
