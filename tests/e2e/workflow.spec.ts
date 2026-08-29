@@ -1,7 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const invoices = 'invoice_id,customer,invoice_date,amount,currency\nINV-104,Northstar Studio,2026-08-01,850.00,USD\nINV-105,Atlas Works,2026-08-03,425.50,USD';
 const payments = 'date,amount,description,currency\n2026-08-08,850.00,Payment INV-104 Northstar,USD\n2026-08-11,425.50,Transfer INV-105 Atlas,USD';
+const waitForImport = async (page: Page, kind: 'invoices' | 'payments') => {
+  await expect(page.locator('#app')).not.toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator('#live-status')).toHaveText(new RegExp(`\\d+ ${kind} imported\\.`));
+};
 
 test('imports both files, confirms a match, and exports a report', async ({ page }) => {
   await page.goto('/');
@@ -10,10 +14,11 @@ test('imports both files, confirms a match, and exports a report', async ({ page
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoices) });
   await expect(page.getByRole('heading', { name: 'invoices.csv' })).toBeVisible();
   await page.getByRole('button', { name: 'Import invoices' }).click();
-  await expect(page.getByText('2 rows loaded locally').first()).toBeVisible();
+  await waitForImport(page, 'invoices');
 
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'payments.csv', mimeType: 'text/csv', buffer: Buffer.from(payments) });
   await page.getByRole('button', { name: 'Import payments' }).click();
+  await waitForImport(page, 'payments');
   await expect(page.getByText('Strong suggestion').first()).toBeVisible();
 
   await page.getByRole('button', { name: 'Confirm match' }).first().click();
@@ -27,10 +32,10 @@ test('requires an audit note for a manual match and survives an offline reload',
   await page.goto('/');
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoices) });
   await page.getByRole('button', { name: 'Import invoices' }).click();
-  await expect(page.getByText('2 rows loaded locally').first()).toBeVisible();
+  await waitForImport(page, 'invoices');
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'payments.csv', mimeType: 'text/csv', buffer: Buffer.from(payments) });
   await page.getByRole('button', { name: 'Import payments' }).click();
-  await expect(page.getByText('2 rows loaded locally').nth(1)).toBeVisible();
+  await waitForImport(page, 'payments');
 
   await page.getByRole('button', { name: 'Choose another' }).first().click();
   const dialog = page.getByRole('dialog', { name: /Match INV-/ });
@@ -62,6 +67,7 @@ test('rejects an impossible payment date without a page error and keeps the impo
   await page.goto('/');
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoice.csv', mimeType: 'text/csv', buffer: Buffer.from('invoice_id,amount\nINV-9,100') });
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'invalid-date.csv', mimeType: 'text/csv', buffer: Buffer.from('date,amount,description\n2026-99-99,100,test') });
 
   const dialogs: string[] = [];
@@ -79,8 +85,10 @@ test('blocks quick confirmation when two invoices compete for one payment', asyn
   await page.goto('/');
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'competing.csv', mimeType: 'text/csv', buffer: Buffer.from(competingInvoices) });
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'shared.csv', mimeType: 'text/csv', buffer: Buffer.from(sharedPayment) });
   await page.getByRole('button', { name: 'Import payments' }).click();
+  await waitForImport(page, 'payments');
 
   await expect(page.getByText('Needs a closer look')).toHaveCount(2);
   await expect(page.getByText('payment also fits another open invoice')).toHaveCount(2);
@@ -94,6 +102,7 @@ test('rejects a malformed backup, retains the current workspace, and reports no 
   await page.goto('/');
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoice.csv', mimeType: 'text/csv', buffer: Buffer.from('invoice_id,amount\nINV-SAFE,100') });
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
 
   const dialogPromise = page.waitForEvent('dialog');
   await page.locator('#backup-input').setInputFiles({ name: 'malformed.json', mimeType: 'application/json', buffer: Buffer.from('{"invoices":[null],"transactions":[],"matches":[]}') });

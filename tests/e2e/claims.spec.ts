@@ -1,7 +1,11 @@
 import { readFile } from 'node:fs/promises';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
 const replacementInvoices = 'invoice_id,customer,invoice_date,amount,currency\nINV-201,Harbor Type,2026-08-20,300.00,USD';
+const waitForImport = async (page: Page, kind: 'invoices' | 'payments') => {
+  await expect(page.locator('#app')).not.toHaveAttribute('aria-busy', 'true');
+  await expect(page.locator('#live-status')).toHaveText(new RegExp(`\\d+ ${kind} imported\\.`));
+};
 
 test('@claim:offline-reload keeps the sample ledger usable without a network', async ({ page, context }) => {
   await page.goto('/?demo=1');
@@ -40,9 +44,11 @@ test('@claim:csv-match imports two CSVs and offers the matching payment rows', a
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoices) });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'payments.csv', mimeType: 'text/csv', buffer: Buffer.from(payments) });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import payments' }).click();
+  await waitForImport(page, 'payments');
   await expect(page.getByText('INV-104', { exact: true })).toBeVisible();
   await expect(page.locator('.invoice-cell small').first()).toContainText('Northstar Studio');
   await expect(page.locator('.suggestion-cell small').first()).toContainText('Payment INV-104 Northstar');
@@ -59,9 +65,11 @@ test('@claim:private-workflow sends no ledger data to another origin', async ({ 
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'sample-invoices.csv', mimeType: 'text/csv', buffer: Buffer.from('invoice_id,customer,invoice_date,amount,currency\nINV-104,Northstar Studio,2026-08-01,850.00,USD\nINV-105,Atlas Works,2026-08-03,425.50,USD') });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'sample-payments.csv', mimeType: 'text/csv', buffer: Buffer.from('date,amount,description,currency\n2026-08-08,850.00,Payment INV-104 Northstar,USD\n2026-08-11,425.50,Transfer INV-105 Atlas,USD') });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import payments' }).click();
+  await waitForImport(page, 'payments');
   await page.locator('.suggestion-list button[data-confirm]').first().click();
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export report CSV' }).click();
@@ -92,6 +100,7 @@ test('@claim:demo-isolation never writes sample changes into the real workspace'
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'custom.csv', mimeType: 'text/csv', buffer: Buffer.from('record,total,client,issued\nDEMO-1,125,Demo Client,2026-08-24') });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   await page.getByRole('button', { name: 'Start for real' }).click();
   await page.waitForURL((url) => url.pathname === '/' && !url.searchParams.has('demo'));
   const after = await page.evaluate(async () => JSON.stringify({ storage: Object.keys(localStorage).filter((key) => !key.startsWith('demo:')).sort().map((key) => [key, localStorage.getItem(key)]), db: await new Promise<unknown>((resolve, reject) => { const open = indexedDB.open('matchbox-ledger', 1); open.onerror = () => reject(open.error); open.onsuccess = () => { const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }; }) }));
@@ -111,6 +120,7 @@ test('@claim:source-opt-in excludes CSV text by default and includes it after co
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'replacement.csv', mimeType: 'text/csv', buffer: Buffer.from(replacementInvoices) });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   let pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export backup' }).click();
   let path = await (await pending).path();
@@ -121,6 +131,7 @@ test('@claim:source-opt-in excludes CSV text by default and includes it after co
   await page.getByRole('checkbox', { name: /Keep a copy/ }).check();
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export backup' }).click();
   path = await (await pending).path();
@@ -135,9 +146,11 @@ test('@claim:deterministic-review flags competing equal matches instead of confi
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'competing.csv', mimeType: 'text/csv', buffer: Buffer.from(invoices) });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'shared.csv', mimeType: 'text/csv', buffer: Buffer.from(payment) });
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import payments' }).click();
+  await waitForImport(page, 'payments');
   await expect(page.getByText('Needs a closer look')).toHaveCount(2);
   await expect(page.locator('.suggestion-list button[data-confirm]')).toHaveCount(0);
 });
@@ -149,6 +162,7 @@ test('@claim:json-backup restores every stored field in a separate browser conte
   await page.getByRole('checkbox', { name: /Keep a copy/ }).check();
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
   await page.getByRole('button', { name: 'Choose another' }).first().click();
   const dialog = page.getByRole('dialog', { name: /Match INV-/ });
   await dialog.getByLabel('Payment').selectOption({ index: 1 });
