@@ -220,7 +220,14 @@ function licenseDialog(): string {
 
 async function persist(message: string): Promise<void> {
   statusMessage = message;
-  await saveLedger(ledger, isDemo);
+  app.inert = true;
+  app.setAttribute('aria-busy', 'true');
+  try {
+    await saveLedger(ledger, isDemo);
+  } finally {
+    app.inert = false;
+    app.removeAttribute('aria-busy');
+  }
   render();
 }
 

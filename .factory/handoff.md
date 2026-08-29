@@ -44,7 +44,9 @@ Hard-coded page versions were removed.
   waits through the former race window before activating the Plus dialog.
 - A repeated offline run exposed success UI rendering before IndexedDB commit.
   Persistence now commits first, so a visible saved decision is durable before
-  an immediate offline reload; the existing end-to-end test covers that edge.
+  an immediate offline reload. The workspace is marked busy during the short
+  transaction so a second file action cannot race the first; the end-to-end
+  test covers both committed import states and the immediate offline reload.
 
 ## Verification evidence
 
@@ -125,7 +127,7 @@ Live Lighthouse      100 performance / 100 accessibility / 100 best practices / 
 Live FCP / LCP        0.9 s / 1.2 s
 Live TBT / CLS        0 ms / 0
 Live transfer         80 KiB
-App JavaScript        38.47 KB raw / 12.78 KB gzip
+App JavaScript        38.57 KB raw / 12.82 KB gzip
 App CSS               19.03 KB raw / 5.05 KB gzip
 Hero artwork          43.43 KB
 ```

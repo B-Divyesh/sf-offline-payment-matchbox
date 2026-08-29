@@ -27,8 +27,10 @@ test('requires an audit note for a manual match and survives an offline reload',
   await page.goto('/');
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoices) });
   await page.getByRole('button', { name: 'Import invoices' }).click();
+  await expect(page.getByText('2 rows loaded locally').first()).toBeVisible();
   await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'payments.csv', mimeType: 'text/csv', buffer: Buffer.from(payments) });
   await page.getByRole('button', { name: 'Import payments' }).click();
+  await expect(page.getByText('2 rows loaded locally').nth(1)).toBeVisible();
 
   await page.getByRole('button', { name: 'Choose another' }).first().click();
   const dialog = page.getByRole('dialog', { name: /Match INV-/ });
