@@ -42,6 +42,9 @@ Hard-coded page versions were removed.
   after activating the skip link could be pulled back to the route heading.
   Route focus now yields to any newer user focus, and the keyboard regression
   waits through the former race window before activating the Plus dialog.
+- A repeated offline run exposed success UI rendering before IndexedDB commit.
+  Persistence now commits first, so a visible saved decision is durable before
+  an immediate offline reload; the existing end-to-end test covers that edge.
 
 ## Verification evidence
 
@@ -88,7 +91,8 @@ Browser and accessibility evidence:
 PWA, privacy, and response evidence:
 
 - A saved demo decision survived reload and an explicit offline reload. The
-  welcome art also loaded from a fresh precache.
+  welcome art also loaded from a fresh precache. The immediate save/offline
+  transition passed 10/10 repeated runs after the durability repair.
 - A controlled `matchbox-v10` update displayed **An app update is ready**,
   activated after Reload, removed the old cache, retained the expected heading,
   and logged no errors. `/release.json` was confirmed absent from Cache Storage.

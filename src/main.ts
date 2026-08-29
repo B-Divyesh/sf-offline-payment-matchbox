@@ -220,8 +220,8 @@ function licenseDialog(): string {
 
 async function persist(message: string): Promise<void> {
   statusMessage = message;
-  render();
   await saveLedger(ledger, isDemo);
+  render();
 }
 
 function addMatch(invoiceId: string, transactionId: string, method: Match['method'], note = ''): void {
