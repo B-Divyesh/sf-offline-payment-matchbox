@@ -1,1 +1,1 @@
-Match payments to invoices from two CSVs without sending your financial rows to a service.
+Match downloaded payment rows to invoices from two CSVs in your browser.

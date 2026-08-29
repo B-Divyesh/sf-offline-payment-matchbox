@@ -34,12 +34,12 @@ document.title = isDemo ? 'Demo — Matchbox Ledger' : 'Matchbox Ledger — matc
 document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', isDemo ? 'https://offline-payment-matchbox.sociobot.in/demo/' : 'https://offline-payment-matchbox.sociobot.in/');
 if (isDemo) {
   const setMeta = (selector: string, content: string) => document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', content);
-  setMeta('meta[name="description"]', 'Try Matchbox Ledger with a separate sample ledger for three freelancer invoices.');
+  setMeta('meta[name="description"]', 'Try Matchbox Ledger in a separate sample workspace with three freelancer invoices.');
   setMeta('meta[property="og:title"]', 'Demo — Matchbox Ledger');
-  setMeta('meta[property="og:description"]', 'Try payment matching with a separate sample ledger.');
+  setMeta('meta[property="og:description"]', 'Try payment matching in a separate sample workspace.');
   setMeta('meta[property="og:url"]', 'https://offline-payment-matchbox.sociobot.in/demo/');
   setMeta('meta[name="twitter:title"]', 'Demo — Matchbox Ledger');
-  setMeta('meta[name="twitter:description"]', 'Try payment matching with a separate sample ledger.');
+  setMeta('meta[name="twitter:description"]', 'Try payment matching in a separate sample workspace.');
 }
 configureLicense(isDemo);
 
@@ -87,7 +87,7 @@ function render(): void {
           <p class="eyebrow">${isDemo ? 'Sample payment matches' : 'Match downloaded payments to invoices'}</p>
           <h1 tabindex="-1">${isDemo ? 'Review the sample payment matches' : 'Match payments to invoices from two CSVs'}</h1>
           <p class="lede">${isDemo ? 'Explore three freelancer invoices and their downloaded payments. Demo changes stay separate from your workspace.' : 'For freelancers who reconcile invoices in spreadsheets or offline tools.'}</p>
-          ${isDemo ? demoPreview() : `<div class="hero-actions"><a class="primary-button" href="/?demo=1">Try it with sample data</a><span>Opens a separate ledger with three invoices.</span><a class="secondary-button" href="#workspace">Choose your invoice CSV</a></div><ul class="plain-facts"><li>${icon('check')} Works offline after the first visit</li><li>${icon('lock')} Files stay on this device</li><li>${icon('spark')} Free matcher · Plus costs $19 once</li></ul>`}
+          ${isDemo ? demoPreview() : `<div class="hero-actions"><a class="primary-button" href="/?demo=1">Try it with sample data</a><span>Opens a separate sample workspace with three invoices.</span><a class="secondary-button" href="#workspace">Choose your invoice CSV</a></div><ul class="plain-facts"><li>${icon('check')} Works offline after the first visit</li><li>${icon('lock')} Files stay on this device</li><li>${icon('spark')} Free matcher · Plus costs $19 once</li></ul>`}
           <div class="privacy-stamp">${icon('lock')} <span><strong>Your CSV data stays in this browser</strong><small>Source CSV text is saved only when you choose it.</small></span></div>
         </div>
         ${hasFiles ? '' : `<figure class="hero-art"><img src="${trayArtwork}" width="1200" height="800" alt="Two porcelain sorting trays connected by one cobalt matchstick" fetchpriority="high" decoding="async"><figcaption>Invoice and payment rows appear side by side.</figcaption></figure>`}
@@ -95,7 +95,7 @@ function render(): void {
 
       <section class="how-section" aria-labelledby="how-title">
         <div class="section-heading"><div><p class="step-label">Three steps</p><h2 id="how-title">How it works</h2></div></div>
-        <ol class="how-list"><li><strong>Import both CSVs</strong><span>Choose invoice and payment columns before anything is saved.</span></li><li><strong>Review each suggestion</strong><span>Confirm clear pairs. Add a note to every manual match.</span></li><li><strong>Export the record</strong><span>Download matched, open, and unused rows in one report.</span></li></ol>
+        <ol class="how-list"><li><strong>Import both CSVs</strong><span>Choose invoice and payment columns before the app saves imported rows.</span></li><li><strong>Review each suggestion</strong><span>Confirm clear pairs. Add a note to every manual match.</span></li><li><strong>Export the record</strong><span>Download matched, open, and unused rows in one report.</span></li></ol>
       </section>
 
       <section class="workbench" id="workspace" aria-labelledby="workspace-title">
@@ -134,7 +134,7 @@ function render(): void {
         <div class="section-heading"><div><p class="step-label">Local data controls</p><h2 id="data-title">Back up or clear your local workspace</h2></div></div>
         <div class="data-grid">
           <div><h3>Back up this workspace</h3><p>Export invoices, payments, matches, and notes as one JSON file. Import it later on this or another device.</p><div class="button-row"><button class="secondary-button" type="button" data-action="export-json">Export backup</button><label class="secondary-button file-button">Import backup<input id="backup-input" type="file" accept="application/json,.json"></label></div></div>
-          <div><h3>Start a clean month</h3><p>Removing a workspace clears Matchbox data from this browser. Export a backup first if you may need it.</p><button class="danger-button" type="button" data-action="clear">Clear local workspace</button></div>
+          <div><h3>Clear this local workspace</h3><p>Removing a workspace clears Matchbox data from this browser. Export a backup first if you may need it.</p><button class="danger-button" type="button" data-action="clear">Clear local workspace</button></div>
         </div>
       </section>
 
@@ -377,7 +377,7 @@ app.addEventListener('click', async (event) => {
       await clearLedger(isDemo);
       ledger = emptyLedger();
       pending = null;
-      statusMessage = isDemo ? 'Demo ledger cleared. Reset the demo to restore its sample data.' : 'Local workspace cleared.';
+      statusMessage = isDemo ? 'Demo workspace cleared. Reset the demo to restore its sample data.' : 'Local workspace cleared.';
       render();
     }
   } else if (target.dataset.action === 'close-manual') (document.querySelector('#match-dialog') as HTMLDialogElement)?.close();

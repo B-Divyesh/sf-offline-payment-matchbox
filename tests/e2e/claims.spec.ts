@@ -6,6 +6,15 @@ const waitForImport = async (page: Page, kind: 'invoices' | 'payments') => {
   await expect(page.locator('#app')).not.toHaveAttribute('aria-busy', 'true');
   await expect(page.locator('#live-status')).toHaveText(new RegExp(`\\d+ ${kind} imported\\.`));
 };
+const storedDemoWorkspace = (page: Page) => page.evaluate(async () => new Promise<unknown>((resolve, reject) => {
+  const open = indexedDB.open('demo:matchbox-ledger', 1);
+  open.onerror = () => reject(open.error);
+  open.onsuccess = () => {
+    const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current');
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+  };
+}));
 
 test('@claim:offline-reload keeps the sample ledger usable without a network', async ({ page, context }) => {
   await page.goto('/?demo=1');
@@ -139,6 +148,42 @@ test('@claim:source-opt-in excludes CSV text by default and includes it after co
   path = await (await pending).path();
   backup = JSON.parse(await readFile(path!, 'utf8')) as { sourceFiles?: Array<{ name: string; text: string }> };
   expect(backup.sourceFiles).toEqual([expect.objectContaining({ name: 'replacement.csv', text: replacementInvoices })]);
+});
+
+test('@claim:mapping-before-save keeps imported rows out of IndexedDB until each mapping is submitted', async ({ page }) => {
+  const invoiceCsv = 'record,total,client,issued\nMAPPED-1,275.00,Juniper Press,2026-08-25';
+  const paymentCsv = 'paid_on,value,memo,money\n2026-08-27,275.00,Transfer MAPPED-1 Juniper,USD';
+  await page.goto('/demo/');
+
+  const initial = await storedDemoWorkspace(page);
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'mapped-invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoiceCsv) });
+  const invoiceMapping = page.locator('#mapping-form');
+  await invoiceMapping.locator('select[name="id"]').selectOption('record');
+  await invoiceMapping.locator('select[name="amount"]').selectOption('total');
+  await invoiceMapping.locator('select[name="customer"]').selectOption('client');
+  await invoiceMapping.locator('select[name="date"]').selectOption('issued');
+  expect(await storedDemoWorkspace(page)).toEqual(initial);
+
+  page.once('dialog', (dialog) => void dialog.accept());
+  await invoiceMapping.getByRole('button', { name: 'Import invoices' }).click();
+  await waitForImport(page, 'invoices');
+  const afterInvoices = await storedDemoWorkspace(page) as { invoices: Array<{ id: string }>; transactions: Array<{ id: string }> };
+  expect(afterInvoices.invoices.map((invoice) => invoice.id)).toEqual(['MAPPED-1']);
+
+  await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'mapped-payments.csv', mimeType: 'text/csv', buffer: Buffer.from(paymentCsv) });
+  const paymentMapping = page.locator('#mapping-form');
+  await paymentMapping.locator('select[name="date"]').selectOption('paid_on');
+  await paymentMapping.locator('select[name="amount"]').selectOption('value');
+  await paymentMapping.locator('select[name="reference"]').selectOption('memo');
+  await paymentMapping.locator('select[name="currency"]').selectOption('money');
+  expect(await storedDemoWorkspace(page)).toEqual(afterInvoices);
+
+  page.once('dialog', (dialog) => void dialog.accept());
+  await paymentMapping.getByRole('button', { name: 'Import payments' }).click();
+  await waitForImport(page, 'payments');
+  const afterPayments = await storedDemoWorkspace(page) as { invoices: Array<{ id: string }>; transactions: Array<{ reference: string }> };
+  expect(afterPayments.invoices.map((invoice) => invoice.id)).toEqual(['MAPPED-1']);
+  expect(afterPayments.transactions.map((payment) => payment.reference)).toEqual(['Transfer MAPPED-1 Juniper']);
 });
 
 test('@claim:deterministic-review flags competing equal matches instead of confirming them', async ({ page }) => {

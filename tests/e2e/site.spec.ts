@@ -67,6 +67,26 @@ test('opens the direct demo on a visible realistic sample match at 390px', async
   expect((await action.boundingBox())!.y + (await action.boundingBox())!.height).toBeLessThanOrEqual(844);
 });
 
+test('states the job, audience, sample workspace, and first action above the mobile fold', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const firstScreen = [
+    page.getByRole('heading', { level: 1, name: 'Match payments to invoices from two CSVs' }),
+    page.getByText('For freelancers who reconcile invoices in spreadsheets or offline tools.'),
+    page.getByRole('link', { name: 'Try it with sample data' }),
+    page.getByText('Opens a separate sample workspace with three invoices.'),
+    page.getByText('Works offline after the first visit'),
+    page.getByText('Files stay on this device'),
+    page.getByText('Free matcher · Plus costs $19 once'),
+  ];
+  for (const item of firstScreen) {
+    await expect(item).toBeVisible();
+    const box = await item.boundingBox();
+    expect(box && box.y + box.height, await item.textContent() ?? 'first-screen item').toBeLessThanOrEqual(844);
+  }
+  await expect(page.getByRole('heading', { level: 3, name: 'Clear this local workspace' })).toBeVisible();
+});
+
 test('resolves cold workspace and demo hashes and moves focus to their destination', async ({ page }) => {
   await page.goto('/#workspace');
   await expect(page.getByRole('heading', { name: 'Import your invoice and payment CSVs' })).toBeFocused();

@@ -49,6 +49,13 @@
     "sandbox": "fresh /demo/ sample; import once without consent and once with consent; inspect downloaded backups"
   },
   {
+    "id": "mapping-before-save",
+    "claim": "Imported rows are saved only after column mapping is submitted",
+    "where": "landing How it works step one",
+    "test": "npm run test:e2e -- --grep @claim:mapping-before-save",
+    "sandbox": "fresh /demo/ sample; open invoice and payment mapping forms; byte-compare demo IndexedDB before each submission; assert only submitted rows replace stored records"
+  },
+  {
     "id": "deterministic-review",
     "claim": "Deterministic suggestions flag competing matches and never silently merge them",
     "where": "README, terms",
