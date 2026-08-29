@@ -1,0 +1,18 @@
+{
+  "currentVersion": "matchbox-v16",
+  "nextVersion": "matchbox-v16-update-check",
+  "before": {
+    "caches": [
+      "matchbox-v16"
+    ]
+  },
+  "prompt": "An app update is ready.\nReload",
+  "after": {
+    "h1": "Match payments to invoices from two CSVs",
+    "caches": [
+      "matchbox-v16-update-check"
+    ]
+  },
+  "releaseIdentityCached": false,
+  "errors": []
+}
