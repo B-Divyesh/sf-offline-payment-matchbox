@@ -1,1 +1,1 @@
-Match downloaded payment rows to invoices from two CSVs in your browser.
+Match downloaded payment rows to invoice rows from two CSV files.

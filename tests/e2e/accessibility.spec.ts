@@ -38,7 +38,7 @@ test('supports skip-link and modal keyboard operation with visible focus', async
 test('keeps every visible mobile header control at least 44px high', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  const targets = await page.locator('.site-header a:visible, .site-header button:visible').evaluateAll((elements) => elements.map((element) => {
+  const targets = await page.locator('.site-header a:visible, .site-header button:visible, .site-header summary:visible').evaluateAll((elements) => elements.map((element) => {
     const box = element.getBoundingClientRect();
     return { name: element.textContent?.trim(), width: box.width, height: box.height };
   }));

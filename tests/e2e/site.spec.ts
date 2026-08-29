@@ -74,7 +74,7 @@ test('states the job, audience, sample workspace, and first action above the mob
     page.getByRole('heading', { level: 1, name: 'Match payments to invoices from two CSVs' }),
     page.getByText('For freelancers who reconcile invoices in spreadsheets or offline tools.'),
     page.getByRole('link', { name: 'Try it with sample data' }),
-    page.getByText('Opens a separate sample workspace with three invoices.'),
+    page.getByText('Opens a separate sample workspace with three invoices and three payments.'),
     page.getByText('Works offline after the first visit'),
     page.getByText('Files stay on this device'),
     page.getByText('Free matcher · Plus costs $19 once'),
@@ -102,9 +102,32 @@ test('resolves cold workspace and demo hashes and moves focus to their destinati
   await expect(page.getByRole('heading', { name: 'Review the sample payment matches' })).toBeFocused();
 });
 
-test('uses the same header navigation on app and legal routes', async ({ page }) => {
+test('keeps all header destinations available with 44px targets on desktop and mobile', async ({ page }) => {
   for (const path of ['/', '/?demo=1', '/privacy/', '/terms/', '/404.html']) {
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto(path);
-    await expect(page.locator('.site-header nav')).toHaveText(/Demo[\s\S]*Workspace[\s\S]*Privacy/);
+    const desktopLinks = page.locator('.desktop-nav a');
+    await expect(desktopLinks).toHaveText(['Demo', 'Workspace', 'Privacy']);
+    for (const link of await desktopLinks.all()) {
+      const box = await link.boundingBox();
+      expect(box?.width, `${await link.textContent()} desktop width`).toBeGreaterThanOrEqual(44);
+      expect(box?.height, `${await link.textContent()} desktop height`).toBeGreaterThanOrEqual(44);
+    }
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const menu = page.locator('.mobile-nav summary');
+    await expect(menu).toBeVisible();
+    const menuBox = await menu.boundingBox();
+    expect(menuBox?.width, 'mobile menu width').toBeGreaterThanOrEqual(44);
+    expect(menuBox?.height, 'mobile menu height').toBeGreaterThanOrEqual(44);
+    await menu.click();
+    const mobileLinks = page.locator('.mobile-nav nav a');
+    await expect(mobileLinks).toHaveText(['Demo', 'Workspace', 'Privacy']);
+    for (const link of await mobileLinks.all()) {
+      await expect(link).toBeVisible();
+      const box = await link.boundingBox();
+      expect(box?.width, `${await link.textContent()} mobile width`).toBeGreaterThanOrEqual(44);
+      expect(box?.height, `${await link.textContent()} mobile height`).toBeGreaterThanOrEqual(44);
+    }
   }
 });

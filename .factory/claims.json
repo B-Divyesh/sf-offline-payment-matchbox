@@ -7,6 +7,20 @@
     "sandbox": "fresh browser context at /demo/; wait for service worker; set context offline; reload sample ledger"
   },
   {
+    "id": "demo-sample",
+    "claim": "The sample workspace opens with three freelancer invoices and three downloaded payments",
+    "where": "landing helper, demo lead, README",
+    "test": "npm run test:e2e -- --grep @claim:demo-sample",
+    "sandbox": "fresh /demo/ sample; assert both three-row trays and the named invoice and payment records shown by the sample"
+  },
+  {
+    "id": "matching-signals",
+    "claim": "Suggestions show amount, currency, reference, customer, and 45-day date evidence when each rule applies",
+    "where": "sample suggestion reasons",
+    "test": "npm run test:e2e -- --grep @claim:matching-signals",
+    "sandbox": "fresh /demo/ sample; seed isolated demo-only fixtures and assert each visible suggestion reason, including the 45-day boundary"
+  },
+  {
     "id": "csv-report",
     "claim": "Exports matched invoices, open invoices, and unused payments as CSV",
     "where": "workspace, how it works, README",

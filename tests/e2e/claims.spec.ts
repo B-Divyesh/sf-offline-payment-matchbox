@@ -16,6 +16,27 @@ const storedDemoWorkspace = (page: Page) => page.evaluate(async () => new Promis
   };
 }));
 
+async function seedDemoSignalFixture(page: Page, fixture: { id: string; customer: string; invoiceDate: string; amount: number; currency: string; reference: string; paymentDate: string; paymentCurrency: string }): Promise<void> {
+  await page.evaluate(async (data) => {
+    await new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open('demo:matchbox-ledger', 1);
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => {
+        const transaction = open.result.transaction('workspace', 'readwrite');
+        transaction.objectStore('workspace').put({
+          invoices: [{ id: data.id, customer: data.customer, date: data.invoiceDate, dueDate: '', amount: data.amount, currency: data.currency, sourceRow: 2 }],
+          transactions: [{ id: 'signal-payment', date: data.paymentDate, amount: data.amount, reference: data.reference, currency: data.paymentCurrency, sourceRow: 2 }],
+          matches: [],
+          updatedAt: '2026-08-29T00:00:00.000Z',
+        }, 'current');
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      };
+    });
+  }, fixture);
+  await page.reload();
+}
+
 test('@claim:offline-reload keeps the sample ledger usable without a network', async ({ page, context }) => {
   await page.goto('/?demo=1');
   await expect(page.getByText('Demo — sample data, nothing is saved to your workspace')).toBeVisible();
@@ -24,6 +45,70 @@ test('@claim:offline-reload keeps the sample ledger usable without a network', a
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Review the sample payment matches' })).toBeVisible();
   await expect(page.getByText('2 invoices to review')).toBeVisible();
+});
+
+test('@claim:demo-sample opens three freelancer invoices and three downloaded payments', async ({ page }) => {
+  await page.goto('/demo/');
+  await expect(page.getByRole('heading', { name: 'Review the sample payment matches' })).toBeVisible();
+  const trays = page.locator('.import-tray');
+  await expect(trays).toHaveCount(2);
+  await expect(trays.nth(0).getByText('3 rows loaded locally')).toBeVisible();
+  await expect(trays.nth(1).getByText('3 rows loaded locally')).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'INV-104 Northstar Studio' })).toBeVisible();
+  await expect(page.locator('.match-row').filter({ hasText: 'INV-105' })).toContainText('Atlas Works');
+  await expect(page.locator('.match-row').filter({ hasText: 'INV-106' })).toContainText('Cedar & Finch');
+  await expect(page.getByLabel('Sample match preview')).toContainText('Transfer INV-105 Atlas');
+  await expect(page.locator('.match-row').filter({ hasText: 'INV-106' })).toContainText('Cedar invoice 106');
+});
+
+test('@claim:matching-signals shows the exact matching evidence for each sample rule', async ({ page }) => {
+  await page.goto('/demo/');
+  const fixtures = [
+    {
+      id: 'INV-AMOUNT',
+      customer: '', invoiceDate: '', amount: 100, currency: '', reference: 'Unlabelled payment', paymentDate: '2026-08-01', paymentCurrency: '',
+      reason: 'same amount',
+      label: 'Possible match',
+    },
+    {
+      id: 'INV-CURRENCY',
+      customer: '', invoiceDate: '', amount: 101, currency: 'USD', reference: 'Unlabelled payment', paymentDate: '2026-08-01', paymentCurrency: 'USD',
+      reason: 'same amount · same USD currency',
+      label: 'Possible match',
+    },
+    {
+      id: 'INV-REFERENCE',
+      customer: '', invoiceDate: '', amount: 102, currency: '', reference: 'Transfer INV-REFERENCE', paymentDate: '2026-08-01', paymentCurrency: '',
+      reason: 'same amount · invoice number in reference',
+      label: 'Strong suggestion',
+    },
+    {
+      id: 'INV-CUSTOMER',
+      customer: 'Atlas Works', invoiceDate: '', amount: 103, currency: '', reference: 'Atlas payment', paymentDate: '2026-08-01', paymentCurrency: '',
+      reason: 'same amount · customer name in reference',
+      label: 'Possible match',
+    },
+    {
+      id: 'INV-DATE-45',
+      customer: '', invoiceDate: '2026-01-01', amount: 104, currency: '', reference: 'Unlabelled payment', paymentDate: '2026-02-15', paymentCurrency: '',
+      reason: 'same amount · date is within 45 days',
+      label: 'Possible match',
+    },
+    {
+      id: 'INV-DATE-46',
+      customer: '', invoiceDate: '2026-01-01', amount: 105, currency: '', reference: 'Unlabelled payment', paymentDate: '2026-02-16', paymentCurrency: '',
+      reason: 'same amount · date is within 120 days',
+      label: 'Possible match',
+    },
+  ];
+
+  for (const fixture of fixtures) {
+    await seedDemoSignalFixture(page, fixture);
+    const row = page.locator('.match-row').filter({ hasText: fixture.id });
+    await expect(row).toBeVisible();
+    await expect(row.getByText(fixture.label)).toBeVisible();
+    await expect(row.locator('.reason')).toHaveText(fixture.reason);
+  }
 });
 
 test('@claim:csv-report exports every sample invoice and unused payment', async ({ page }) => {

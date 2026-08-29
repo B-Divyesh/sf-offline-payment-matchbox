@@ -6,7 +6,7 @@ Parsing and matching stay on this device. The app flags competing matches, requi
 
 Live: <https://offline-payment-matchbox.sociobot.in>
 
-Demo: <https://offline-payment-matchbox.sociobot.in/?demo=1>. It opens three invoices and three payments in the separate `demo:matchbox-ledger` database. Use **Reset demo** to restore the sample or **Start for real** to discard it.
+Demo: <https://offline-payment-matchbox.sociobot.in/?demo=1>. The sample workspace opens with three freelancer invoices and three downloaded payments in the separate `demo:matchbox-ledger` database. Use **Reset demo** to restore the sample or **Start for real** to discard it.
 
 ## How it works
 

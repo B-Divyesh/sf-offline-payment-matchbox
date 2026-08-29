@@ -4,11 +4,12 @@ Audited 29 August 2026 against the home page, direct `?demo=1` page, and Plus di
 
 | Copy | Words | Claim or result |
 |---|---:|---|
+| Menu | 1 | Pass; opens the phone site navigation |
 | Match downloaded payments to invoices | 5 | Pass |
 | Match payments to invoices from two CSVs | 7 | `csv-match` |
 | For freelancers who reconcile invoices in spreadsheets or offline tools. | 10 | Pass |
 | Try it with sample data | 5 | Pass |
-| Opens a separate sample workspace with three invoices. | 8 | `demo-isolation` |
+| Opens a separate sample workspace with three invoices and three payments. | 11 | `demo-sample`, `demo-isolation` |
 | Choose your invoice CSV | 4 | Pass |
 | Works offline after the first visit | 6 | `offline-reload` |
 | Files stay on this device | 5 | `private-workflow` |
@@ -55,6 +56,7 @@ Audited 29 August 2026 against the home page, direct `?demo=1` page, and Plus di
 | Sample payment matches | 3 | Pass |
 | Review the sample payment matches | 5 | Pass |
 | Explore three freelancer invoices and their downloaded payments. | 8 | Pass |
+| same amount · same USD currency · invoice number in reference · customer name in reference · date is within 45 days | 18 | `matching-signals` |
 | Demo changes stay separate from your workspace. | 7 | `demo-isolation` |
 | Confirm match | 2 | Pass |
 | Resolve the ledger | 3 | Pass; ledger names the reconciliation record, not the storage boundary |
@@ -67,6 +69,17 @@ Audited 29 August 2026 against the home page, direct `?demo=1` page, and Plus di
 | Checkout is hosted by Sociobot. | 5 | `billing-routing` |
 | See the checkout page for merchant and refund terms. | 9 | Pass; directs buyers to current terms |
 | Restore purchase | 2 | `license-restore` |
+
+## Round 5 claim additions
+
+The direct sample and its visible suggestion reasons are listed claims. Browser
+evidence starts from `/demo/`, uses isolated demo-only fixtures, and checks
+visible record counts, names, and matching reasons.
+
+| Copy | Words | Claim or result |
+|---|---:|---|
+| The sample workspace opens with three freelancer invoices and three downloaded payments. | 12 | `demo-sample` |
+| Suggestions show amount, currency, reference, customer, and 45-day date evidence when each rule applies. | 15 | `matching-signals` |
 
 ## First-read check
 
