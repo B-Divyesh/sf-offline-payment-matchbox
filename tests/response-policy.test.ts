@@ -34,5 +34,6 @@ describe('static deployment response policy', () => {
     expect(config.navigationFallback).toBeUndefined();
     expect(config.responseOverrides['404']?.rewrite).toBe('/404.html');
     expect(route('/404.html')['Cache-Control']).toBe('no-cache');
+    expect(route('/*')['Cache-Control']).toBe('no-cache');
   });
 });

@@ -131,7 +131,7 @@ test('makes only same-origin requests in the default private workflow', async ({
   const origins = new Set<string>();
   page.on('request', (request) => origins.add(new URL(request.url()).origin));
   await page.goto('/', { waitUntil: 'networkidle' });
-  expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+  expect([...origins]).toEqual([new URL(page.url()).origin]);
 });
 
 test('@claim:daily-license-check keeps one daily result visible and focused', async ({ page }) => {

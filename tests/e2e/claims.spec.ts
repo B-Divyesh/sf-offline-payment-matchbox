@@ -31,11 +31,12 @@ test('@claim:private-workflow sends no ledger data to another origin', async ({ 
   const origins = new Set<string>();
   page.on('request', (request) => origins.add(new URL(request.url()).origin));
   await page.goto('/demo/', { waitUntil: 'networkidle' });
+  const productOrigin = new URL(page.url()).origin;
   await page.getByRole('button', { name: 'Confirm match' }).first().click();
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export report CSV' }).click();
   await pending;
-  expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+  expect([...origins]).toEqual([productOrigin]);
 });
 
 test('@claim:demo-isolation never writes sample changes into the real workspace', async ({ page }) => {
@@ -43,7 +44,7 @@ test('@claim:demo-isolation never writes sample changes into the real workspace'
   await page.getByRole('button', { name: 'Confirm match' }).first().click();
   await expect(page.getByText('2', { exact: true }).first()).toBeVisible();
   await page.getByRole('button', { name: 'Start for real' }).click();
-  await expect(page).toHaveURL('http://127.0.0.1:4173/');
+  await page.waitForURL((url) => url.pathname === '/');
   await expect(page.getByText(/rows loaded locally/)).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Confirmed matches' })).toHaveCount(0);
 });
