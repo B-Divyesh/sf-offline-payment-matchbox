@@ -88,6 +88,9 @@ Evidence:
 - `.factory/evidence/repair-5-local-demo/`
 - `.factory/evidence/repair-5-lighthouse.json`
 - `.factory/evidence/repair-5-sw-update.json`
+- `.factory/evidence/repair-5-live-home/`
+- `.factory/evidence/repair-5-live-demo/`
+- `.factory/evidence/repair-5-live-lighthouse.json`
 
 The claims inventory remains `.factory/claims.json`; the exact repeated race
 gate is encoded in `package.json`. Library/package consumer, owned-backend
@@ -109,6 +112,27 @@ LIVE_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run verify:identi
 E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:e2e
 E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:demo-isolation
 ```
+
+Deployment and live results on 2026-08-29:
+
+- Azure Static Web Apps deployment completed at
+  `https://offline-payment-matchbox.sociobot.in`.
+- Release identity passed for `offline-payment-matchbox` v1.0.5 at deployed
+  commit `614325eb29d4fed33a9f20b72429728159f3fe33`.
+- Complete live browser suite: **56/56 passed**.
+- Live forced delayed-response demo isolation: **10/10 passed**.
+- Live worker URL checks on `/` and `/demo/`: HTTP 200, desktop and 390 px
+  captures, required semantics, and zero console/page errors.
+- Live PWA: `matchbox-v16` controlled `/demo/`; a 390 px offline reload kept
+  the sample ledger and offline notice visible with no horizontal overflow.
+- Root HTML is `no-cache`; hashed JavaScript is one-year immutable. CSP,
+  HSTS, nosniff, frame denial, referrer policy, and Permissions-Policy are
+  present.
+- Billing smoke test made no purchase: checkout returned 303 to the hosted
+  Dodo checkout, while the invalid license fixture returned HTTP 200 with
+  `{valid:false, reason:"invalid"}`.
+- Live mobile Lighthouse: Performance 100, Accessibility 100, Best Practices
+  100, SEO 100; FCP 1.0 s, LCP 1.0 s, TBT 0 ms, CLS 0, transfer 80 KiB.
 
 ## Known gaps and next steps
 
