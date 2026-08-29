@@ -1,0 +1,370 @@
+[
+  {
+    "name": "mobile",
+    "status": 200,
+    "url": "https://offline-payment-matchbox.sociobot.in/",
+    "errors": [],
+    "title": "Matchbox Ledger — match payments to invoices",
+    "h1": [
+      "Match payments to invoices from two CSVs"
+    ],
+    "aboveFold": [
+      {
+        "tag": "span",
+        "text": "Matchbox Ledger",
+        "rect": {
+          "x": 61,
+          "y": 24.9375,
+          "width": 111.765625,
+          "height": 21.109375,
+          "top": 24.9375,
+          "right": 172.765625,
+          "bottom": 46.046875,
+          "left": 61
+        }
+      },
+      {
+        "tag": "button",
+        "text": "Get Plus",
+        "rect": {
+          "x": 289.609375,
+          "y": 13.5,
+          "width": 84.390625,
+          "height": 44,
+          "top": 13.5,
+          "right": 374,
+          "bottom": 57.5,
+          "left": 289.609375
+        }
+      },
+      {
+        "tag": "p",
+        "text": "Local payment reconciliation",
+        "rect": {
+          "x": 20,
+          "y": 118,
+          "width": 350,
+          "height": 11.84375,
+          "top": 118,
+          "right": 370,
+          "bottom": 129.84375,
+          "left": 20
+        }
+      },
+      {
+        "tag": "h1",
+        "text": "Match payments to invoices from two CSVs",
+        "rect": {
+          "x": 20,
+          "y": 141.84375,
+          "width": 350,
+          "height": 144.46875,
+          "top": 141.84375,
+          "right": 370,
+          "bottom": 286.3125,
+          "left": 20
+        }
+      },
+      {
+        "tag": "p",
+        "text": "For freelancers who reconcile invoices in spreadsheets or offline tools.",
+        "rect": {
+          "x": 20,
+          "y": 314.3125,
+          "width": 350,
+          "height": 53.0625,
+          "top": 314.3125,
+          "right": 370,
+          "bottom": 367.375,
+          "left": 20
+        }
+      },
+      {
+        "tag": "a",
+        "text": "Try it with sample data",
+        "rect": {
+          "x": 20,
+          "y": 399.375,
+          "width": 350,
+          "height": 46,
+          "top": 399.375,
+          "right": 370,
+          "bottom": 445.375,
+          "left": 20
+        }
+      },
+      {
+        "tag": "span",
+        "text": "Opens a separate ledger with three invoices.",
+        "rect": {
+          "x": 20,
+          "y": 457.375,
+          "width": 350,
+          "height": 20.640625,
+          "top": 457.375,
+          "right": 370,
+          "bottom": 478.015625,
+          "left": 20
+        }
+      },
+      {
+        "tag": "a",
+        "text": "Choose your invoice CSV",
+        "rect": {
+          "x": 20,
+          "y": 490.015625,
+          "width": 350,
+          "height": 46,
+          "top": 490.015625,
+          "right": 370,
+          "bottom": 536.015625,
+          "left": 20
+        }
+      },
+      {
+        "tag": "strong",
+        "text": "Private by design",
+        "rect": {
+          "x": 66,
+          "y": 674.34375,
+          "width": 246.703125,
+          "height": 24,
+          "top": 674.34375,
+          "right": 312.703125,
+          "bottom": 698.34375,
+          "left": 66
+        }
+      },
+      {
+        "tag": "small",
+        "text": "Parsing and matching stay in this browser",
+        "rect": {
+          "x": 66,
+          "y": 698.34375,
+          "width": 246.703125,
+          "height": 19.984375,
+          "top": 698.34375,
+          "right": 312.703125,
+          "bottom": 718.328125,
+          "left": 66
+        }
+      }
+    ],
+    "actions": [
+      {
+        "tag": "a",
+        "text": "Matchbox Ledger",
+        "href": "https://offline-payment-matchbox.sociobot.in/"
+      },
+      {
+        "tag": "button",
+        "text": "Get Plus",
+        "href": null
+      },
+      {
+        "tag": "a",
+        "text": "Try it with sample data",
+        "href": "https://offline-payment-matchbox.sociobot.in/demo/"
+      },
+      {
+        "tag": "a",
+        "text": "Choose your invoice CSV",
+        "href": "https://offline-payment-matchbox.sociobot.in/#workspace"
+      }
+    ],
+    "scrollHeight": 4494,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    }
+  },
+  {
+    "name": "desktop",
+    "status": 200,
+    "url": "https://offline-payment-matchbox.sociobot.in/",
+    "errors": [],
+    "title": "Matchbox Ledger — match payments to invoices",
+    "h1": [
+      "Match payments to invoices from two CSVs"
+    ],
+    "aboveFold": [
+      {
+        "tag": "span",
+        "text": "Matchbox Ledger",
+        "rect": {
+          "x": 117,
+          "y": 23.5,
+          "width": 127.671875,
+          "height": 24,
+          "top": 23.5,
+          "right": 244.671875,
+          "bottom": 47.5,
+          "left": 117
+        }
+      },
+      {
+        "tag": "a",
+        "text": "Demo",
+        "rect": {
+          "x": 1107.09375,
+          "y": 24.6875,
+          "width": 39.984375,
+          "height": 21.609375,
+          "top": 24.6875,
+          "right": 1147.078125,
+          "bottom": 46.296875,
+          "left": 1107.09375
+        }
+      },
+      {
+        "tag": "a",
+        "text": "Workspace",
+        "rect": {
+          "x": 1173.078125,
+          "y": 24.6875,
+          "width": 76.53125,
+          "height": 21.609375,
+          "top": 24.6875,
+          "right": 1249.609375,
+          "bottom": 46.296875,
+          "left": 1173.078125
+        }
+      },
+      {
+        "tag": "button",
+        "text": "Get Plus",
+        "rect": {
+          "x": 1275.609375,
+          "y": 13.5,
+          "width": 92.390625,
+          "height": 44,
+          "top": 13.5,
+          "right": 1368,
+          "bottom": 57.5,
+          "left": 1275.609375
+        }
+      },
+      {
+        "tag": "p",
+        "text": "Local payment reconciliation",
+        "rect": {
+          "x": 72,
+          "y": 202.75,
+          "width": 526.3125,
+          "height": 11.84375,
+          "top": 202.75,
+          "right": 598.3125,
+          "bottom": 214.59375,
+          "left": 72
+        }
+      },
+      {
+        "tag": "h1",
+        "text": "Match payments to invoices from two CSVs",
+        "rect": {
+          "x": 72,
+          "y": 226.59375,
+          "width": 526.3125,
+          "height": 339.25,
+          "top": 226.59375,
+          "right": 598.3125,
+          "bottom": 565.84375,
+          "left": 72
+        }
+      },
+      {
+        "tag": "p",
+        "text": "For freelancers who reconcile invoices in spreadsheets or offline tools.",
+        "rect": {
+          "x": 72,
+          "y": 593.84375,
+          "width": 526.3125,
+          "height": 63.1875,
+          "top": 593.84375,
+          "right": 598.3125,
+          "bottom": 657.03125,
+          "left": 72
+        }
+      },
+      {
+        "tag": "a",
+        "text": "Try it with sample data",
+        "rect": {
+          "x": 72,
+          "y": 689.03125,
+          "width": 209.609375,
+          "height": 46,
+          "top": 689.03125,
+          "right": 281.609375,
+          "bottom": 735.03125,
+          "left": 72
+        }
+      },
+      {
+        "tag": "span",
+        "text": "Opens a separate ledger with three invoices.",
+        "rect": {
+          "x": 297.609375,
+          "y": 691.390625,
+          "width": 220,
+          "height": 41.28125,
+          "top": 691.390625,
+          "right": 517.609375,
+          "bottom": 732.671875,
+          "left": 297.609375
+        }
+      },
+      {
+        "tag": "a",
+        "text": "Choose your invoice CSV",
+        "rect": {
+          "x": 72,
+          "y": 747.03125,
+          "width": 232.71875,
+          "height": 46,
+          "top": 747.03125,
+          "right": 304.71875,
+          "bottom": 793.03125,
+          "left": 72
+        }
+      }
+    ],
+    "actions": [
+      {
+        "tag": "a",
+        "text": "Matchbox Ledger",
+        "href": "https://offline-payment-matchbox.sociobot.in/"
+      },
+      {
+        "tag": "a",
+        "text": "Demo",
+        "href": "https://offline-payment-matchbox.sociobot.in/demo/"
+      },
+      {
+        "tag": "a",
+        "text": "Workspace",
+        "href": "https://offline-payment-matchbox.sociobot.in/#workspace"
+      },
+      {
+        "tag": "button",
+        "text": "Get Plus",
+        "href": null
+      },
+      {
+        "tag": "a",
+        "text": "Try it with sample data",
+        "href": "https://offline-payment-matchbox.sociobot.in/demo/"
+      },
+      {
+        "tag": "a",
+        "text": "Choose your invoice CSV",
+        "href": "https://offline-payment-matchbox.sociobot.in/#workspace"
+      }
+    ],
+    "scrollHeight": 3188,
+    "viewport": {
+      "width": 1440,
+      "height": 900
+    }
+  }
+]

@@ -1,0 +1,107 @@
+{
+  "initial": {
+    "body": "Skip to sample matcher\nDemo — sample data, nothing is saved to your workspace\nReset demo\nStart for real\nMatchbox Ledger\nGet Plus\n\nLOCAL PAYMENT RECONCILIATION\n\nReview a ready-made sample ledger\n\nExplore three freelancer invoices and their downloaded payments. Demo changes stay separate from your workspace.\n\n1 matched\n2 invoices to review\nReview suggestions\nPrivate by design\nParsing and matching stay in this browser\n\nTHREE STEPS\n\nHow it works\nImport both CSVs\nChoose invoice and payment columns before anything is saved.\nReview each suggestion\nConfirm clear pairs. Add a note to every manual match.\nExport the record\nDownload matched, open, and unused rows in one report.\n\n01 · PREPARE\n\nSet your files on the bench\n\nCSV only · nothing leaves this device\n\nLIST A\n\nOpen invoices\n\n3 rows loaded locally\n\nReplace CSV\nSample CSV\n\nLIST B\n\nBank or payment export\n\n3 rows loaded locally\n\nReplace CSV\nSample CSV\n\n02 · REVIEW\n\nResolve the ledger\nExport current report\n1\nmatched\n2\nopen invoices\n2\nunused payments\n$850.00\nresolved value\nINV-105\nAtlas Works · Aug 3, 2026\n$425.50\n\nSTRONG SUGGESTION\n\nAug 11, 2026 · $425.50\nTransfer INV-105 Atlas\n\nsame amount · same USD currency · invoice number in reference · customer name in reference · date is within 45 days\n\nConfirm match\nChoose another\nINV-106\nCedar & Finch · Aug 5, 2026\n$1,200.00\n\nSTRONG SUGGESTION\n\nAug 12, 2026 · $1,200.00\nCedar invoice 106\n\nsame amount · same USD currency · customer name in reference · date is within 45 days\n\nConfirm match\nChoose another\n\n03 · RECORD\n\nConfirmed matches\nExport report CSV\nINVOICE\tPAYMENT DATE\tAMOUNT\tHOW MATCHED\tNOTE\t\nACTIONS\n\n\nINV-104\nNorthstar Studio\n\tAug 8, 2026\t$850.00\tSuggested\t—\tUndo\n\nLOCAL CUSTODY\n\nYour data, in your hands\nBack up this workspace\n\nExport invoices, payments, matches, and notes as one JSON file. Import it later on this or another device.\n\nExport backup\nImport backup\nStart a clean month\n\nRemoving a workspace clears Matchbox data from this browser. Export a backup first if you may need it.\n\nClear local workspace\n\nOPTIONAL SUPPORTER TIER\n\nMatchbox Plus costs $19 once\n\nThe free matcher includes manual review, reports, backups, and offline use. Plus confirms all clear strong suggestions together and remembers repeat column mappings.\n\nView Matchbox Plus\n\nMatch payments to invoices from two CSVs.\n\nPrivacy\nTerms\nMatchbox Plus\n\nBuilt by Param Factory · v1.0.2 · repair 3 · Still-life artwork generated for this product with the factory image model.\n\nReady offline\nDemo sample ready.",
+    "h1": "Review a ready-made sample ledger",
+    "dbs": [
+      "demo:matchbox-ledger",
+      "matchbox-ledger"
+    ],
+    "above": [
+      "Demo — sample data, nothing is saved to your workspace",
+      "Reset demo",
+      "Start for real",
+      "Matchbox Ledger",
+      "Get Plus",
+      "Local payment reconciliation",
+      "Review a ready-made sample ledger",
+      "Explore three freelancer invoices and their downloaded payments. Demo changes stay separate from your workspace.",
+      "1 matched",
+      "2 invoices to review",
+      "Review suggestions",
+      "Private by design",
+      "Parsing and matching stay in this browser"
+    ]
+  },
+  "beforeMatched": "1\nmatched",
+  "afterMatched": "2\nmatched",
+  "resetMatched": "1\nmatched",
+  "resetOpen": "2\nopen invoices",
+  "realSentinelVisibleInRenderedRows": false,
+  "realStoredAfterLeavingDemo": {
+    "invoices": [
+      {
+        "id": "REAL-SENTINEL",
+        "customer": "Existing client",
+        "date": "2026-08-01",
+        "dueDate": "",
+        "amount": 77,
+        "currency": "USD",
+        "sourceRow": 2
+      }
+    ],
+    "transactions": [],
+    "matches": [],
+    "updatedAt": "2026-08-29T00:00:00.000Z"
+  },
+  "dbsAfter": [
+    "demo:matchbox-ledger",
+    "matchbox-ledger"
+  ],
+  "demoStored": null,
+  "requestOrigins": [
+    "https://offline-payment-matchbox.sociobot.in"
+  ],
+  "requests": [
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/",
+      "method": "GET",
+      "type": "document"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/assets/main-B4Jy2VHU.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/assets/main-DdEhYTep.css",
+      "method": "GET",
+      "type": "stylesheet"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/assets/matchbox-trays-nXMDM4Yw.webp",
+      "method": "GET",
+      "type": "image"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/demo/",
+      "method": "GET",
+      "type": "document"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/assets/main-B4Jy2VHU.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/assets/main-DdEhYTep.css",
+      "method": "GET",
+      "type": "stylesheet"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/",
+      "method": "GET",
+      "type": "document"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/assets/main-B4Jy2VHU.js",
+      "method": "GET",
+      "type": "script"
+    },
+    {
+      "url": "https://offline-payment-matchbox.sociobot.in/assets/main-DdEhYTep.css",
+      "method": "GET",
+      "type": "stylesheet"
+    }
+  ],
+  "errors": []
+}

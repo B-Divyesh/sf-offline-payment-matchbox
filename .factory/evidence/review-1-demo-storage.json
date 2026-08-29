@@ -1,0 +1,13 @@
+{
+  "test": "Seed non-demo license keys, open live demo, import a mapped CSV, then start for real",
+  "demoReadNonDemoLicense": true,
+  "demoDisplayed": "Plus active",
+  "keyWrittenDuringDemo": "matchbox:mapping:invoice:record|total|client|issued",
+  "writtenValue": "{\"id\":\"record\",\"customer\":\"client\",\"date\":\"issued\",\"dueDate\":\"\",\"amount\":\"total\",\"currency\":\"\"}",
+  "keyStillPresentAfterStartForReal": true,
+  "nonDemoKeysObservedInDemo": [
+    "sb_license:offline-payment-matchbox",
+    "sb_license:offline-payment-matchbox:verdict",
+    "matchbox:mapping:invoice:record|total|client|issued"
+  ]
+}

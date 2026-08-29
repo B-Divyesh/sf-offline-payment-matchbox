@@ -1,0 +1,26 @@
+{
+  "online": {
+    "heading": "Review a ready-made sample ledger",
+    "cookies": [],
+    "resources": {
+      "fonts": [],
+      "scripts": [
+        "https://offline-payment-matchbox.sociobot.in/assets/main-B4Jy2VHU.js"
+      ]
+    },
+    "origins": [
+      "https://offline-payment-matchbox.sociobot.in"
+    ],
+    "fetches": [],
+    "methods": [
+      "GET"
+    ],
+    "downloadName": "matchbox-report-2026-08-29.csv"
+  },
+  "offline": {
+    "heading": "Review a ready-made sample ledger",
+    "status": "You are offline — matching still works",
+    "confirmed": true,
+    "errors": []
+  }
+}
