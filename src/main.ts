@@ -404,7 +404,11 @@ window.addEventListener('offline', render);
 
 function focusRouteDestination(): void {
   const focusedBeforeDelay = document.activeElement;
+  const focusMayMove = focusedBeforeDelay === document.body
+    || focusedBeforeDelay === document.documentElement
+    || (focusedBeforeDelay instanceof HTMLAnchorElement && new URL(focusedBeforeDelay.href, location.href).hash === location.hash);
   window.setTimeout(() => {
+    if (!focusMayMove) return;
     const activeElement = document.activeElement;
     if (activeElement !== focusedBeforeDelay && activeElement !== document.body) return;
     const id = decodeURIComponent(location.hash.slice(1));
