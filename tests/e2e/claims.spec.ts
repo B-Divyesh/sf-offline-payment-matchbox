@@ -98,6 +98,8 @@ test('@claim:demo-isolation never writes sample changes into the real workspace'
   await page.reload();
   await page.getByRole('button', { name: 'Confirm match' }).first().click();
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'custom.csv', mimeType: 'text/csv', buffer: Buffer.from('record,total,client,issued\nDEMO-1,125,Demo Client,2026-08-24') });
+  await page.locator('#mapping-form select[name="id"]').selectOption('record');
+  await page.locator('#mapping-form select[name="date"]').selectOption('issued');
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import invoices' }).click();
   await waitForImport(page, 'invoices');
