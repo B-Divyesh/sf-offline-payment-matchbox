@@ -1,0 +1,129 @@
+{
+  "identity": [
+    {
+      "path": "/",
+      "status": 200,
+      "sha256": "04074bf8c7c90803536757f41faf5796453cc0880a87ea3c87164ce8b61e5c8f",
+      "match": true
+    },
+    {
+      "path": "/demo/",
+      "status": 200,
+      "sha256": "c880026a4234901055ed4ec4d5dd54542a911b45a2cbb3fc97a77e304919744d",
+      "match": true
+    },
+    {
+      "path": "/privacy/",
+      "status": 200,
+      "sha256": "5d1ba9d24b425819c9c0c344ae2398a003c08228d45682ffc950ad7b08aed88f",
+      "match": true
+    },
+    {
+      "path": "/terms/",
+      "status": 200,
+      "sha256": "5a67d31a16c2949bfbe525233a28ac4ed04446ba70212414e4db1882b8832708",
+      "match": true
+    },
+    {
+      "path": "/404.html",
+      "status": 200,
+      "sha256": "04791e99d16be38cfb060da4b0bbf8c1ffd86eb8e54c807d0596a13ca56a2f4f",
+      "match": true
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "sha256": "fce2de7640f3c212e69f801ca1772ec06b3fc61f231f2c5b4f4c06bdb48bae97",
+      "match": true
+    },
+    {
+      "path": "/manifest.webmanifest",
+      "status": 200,
+      "sha256": "25d9cc1525ddef0041805c76851ac5e630adafa8760a60bd644d5eaeb6edca86",
+      "match": true
+    },
+    {
+      "path": "/asset-manifest.json",
+      "status": 200,
+      "sha256": "ae5cef0f6f741f3a7bb93770d6f035c459306f4f3e4083b21fccbf5c4bceff99",
+      "match": true
+    },
+    {
+      "path": "/release.json",
+      "status": 200,
+      "sha256": "ad590ca1b5c5290c7c444a1df48760f9d33e98bc4beb9fd3bb3e2d0de48a9b74",
+      "match": true
+    },
+    {
+      "path": "/sw.js",
+      "status": 200,
+      "sha256": "3cf2db4a0788fc229b1edcf9cccd8e4824769c009dbd0413902efaddaf46c97f",
+      "match": true
+    },
+    {
+      "path": "/social-matchbox.png",
+      "status": 200,
+      "sha256": "76cbc1ca4428e21ea0acfeb4c5e36a3d683d51f46787d62e6e5fcc0aa6988905",
+      "match": true
+    },
+    {
+      "path": "/assets/legal-CsWWSXDH.css",
+      "status": 200,
+      "sha256": "232c8d60ef2f4a0e49763e123d9ede596fe22a502e1c55826f2bc60e3401b4c1",
+      "match": true
+    },
+    {
+      "path": "/assets/main-B-PI8xsF.js",
+      "status": 200,
+      "sha256": "66d837f0717a792b87e30bbdbc66efc652c807cb7a0713e7162fd3b057d2400e",
+      "match": true
+    },
+    {
+      "path": "/assets/main-DIoJsaTZ.css",
+      "status": 200,
+      "sha256": "b2214d6eacd05f4c623a0335f5a56ab53d532a7e406d7c3e31397d96195585a4",
+      "match": true
+    },
+    {
+      "path": "/assets/matchbox-trays-nXMDM4Yw.webp",
+      "status": 200,
+      "sha256": "49dd2f6fec6989a154c877764bdcf452f6579b4dadb29fff1c9a8483f8373941",
+      "match": true
+    }
+  ],
+  "policy": {
+    "csp": "default-src 'self'; base-uri 'self'; connect-src 'self' https://api.sociobot.in; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
+    "permissions": "accelerometer=(), autoplay=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()",
+    "referrer": "strict-origin-when-cross-origin",
+    "nosniff": "nosniff",
+    "frameOptions": "DENY",
+    "htmlCache": "no-cache",
+    "assetCache": "public, max-age=31536000, immutable",
+    "releaseCache": "no-cache",
+    "release": {
+      "product": "offline-payment-matchbox",
+      "version": "1.0.3",
+      "commit": "5e34293d117a9310763c05d13009074629dc526d"
+    },
+    "expectedCommit": "5e34293d117a9310763c05d13009074629dc526d",
+    "missing": {
+      "status": 404,
+      "designedBody": true
+    },
+    "checkout": {
+      "status": 303,
+      "location": "https://checkout.dodopayments.com/session/cks_0NmSd1XqykqRjiZjiLUOP"
+    },
+    "invalidLicense": {
+      "status": 200,
+      "cache": "no-store",
+      "cors": "https://offline-payment-matchbox.sociobot.in",
+      "body": {
+        "expires_at": null,
+        "reason": "invalid",
+        "valid": false
+      }
+    }
+  },
+  "policyPass": true
+}

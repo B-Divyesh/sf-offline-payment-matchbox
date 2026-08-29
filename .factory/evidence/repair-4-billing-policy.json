@@ -1,0 +1,25 @@
+{
+  "observed_at": "2026-08-29",
+  "checkout": {
+    "status": 303,
+    "location_origin": "https://checkout.dodopayments.com"
+  },
+  "invalid_verification": {
+    "status": 200,
+    "content_type": "application/json",
+    "cache_control": "no-store",
+    "access_control_allow_origin": "https://offline-payment-matchbox.sociobot.in",
+    "body": {
+      "expires_at": null,
+      "reason": "invalid",
+      "valid": false
+    }
+  },
+  "sequential_burst": {
+    "requests": 40,
+    "status_200": 30,
+    "status_429": 10,
+    "first_429_request": 31,
+    "retry_after": "4"
+  }
+}

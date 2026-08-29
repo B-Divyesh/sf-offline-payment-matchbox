@@ -1,0 +1,20 @@
+{
+  "currentVersion": "matchbox-v10",
+  "nextVersion": "matchbox-v10-update-check",
+  "before": {
+    "controller": "http://127.0.0.1:46877/sw.js",
+    "caches": [
+      "matchbox-v10"
+    ]
+  },
+  "prompt": "An app update is ready.\nReload",
+  "after": {
+    "h1": "Match payments to invoices from two CSVs",
+    "caches": [
+      "matchbox-v10-update-check"
+    ],
+    "controller": "http://127.0.0.1:46877/sw.js"
+  },
+  "releaseIdentityCached": false,
+  "errors": []
+}
