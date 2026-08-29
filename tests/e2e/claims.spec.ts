@@ -162,7 +162,7 @@ test('@claim:json-backup restores every stored field in a separate browser conte
   const secondContext = await browser.newContext();
   const secondPage = await secondContext.newPage();
   try {
-    await secondPage.goto('http://127.0.0.1:4173/?demo=1');
+    await secondPage.goto(`${new URL(page.url()).origin}/?demo=1`);
     await secondPage.locator('#backup-input').setInputFiles(path!);
     const restoredDownload = secondPage.waitForEvent('download');
     await secondPage.getByRole('button', { name: 'Export backup' }).click();
