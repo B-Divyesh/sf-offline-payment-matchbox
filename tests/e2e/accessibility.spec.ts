@@ -21,7 +21,7 @@ test('supports skip-link and modal keyboard operation with visible focus', async
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/#main$/);
 
-  const plusTrigger = page.getByRole('button', { name: 'Get Plus' });
+  const plusTrigger = page.getByRole('button', { name: 'View Plus features' }).first();
   await plusTrigger.focus();
   await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Matchbox Plus' });

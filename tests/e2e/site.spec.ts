@@ -25,7 +25,43 @@ test('provides a designed not-found page and sitemap', async ({ page, request })
   await expect(page).toHaveTitle('Page not found — Matchbox Ledger');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('This page does not exist');
   await expect(page.getByRole('link', { name: 'Return to Matchbox Ledger' })).toBeVisible();
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /social-matchbox\.png$/);
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).toContain('/demo/');
+});
+
+test('opens the direct demo on a visible realistic sample match at 390px', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/?demo=1');
+  await expect(page.getByText('INV-105 · Atlas Works', { exact: true })).toBeVisible();
+  const preview = page.getByLabel('Sample match preview');
+  await expect(preview.getByText('Transfer INV-105 Atlas', { exact: true })).toBeVisible();
+  await expect(preview.locator('b')).toHaveCount(2);
+  const action = preview.getByRole('button', { name: 'Confirm match' });
+  await expect(action).toBeVisible();
+  expect((await action.boundingBox())!.y + (await action.boundingBox())!.height).toBeLessThanOrEqual(844);
+});
+
+test('resolves cold workspace and demo hashes and moves focus to their destination', async ({ page }) => {
+  await page.goto('/#workspace');
+  await expect(page.getByRole('heading', { name: 'Import your invoice and payment CSVs' })).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(300);
+  await page.goto('/demo/#match-title');
+  await expect(page.getByRole('heading', { name: 'Resolve the ledger' })).toBeFocused();
+  await page.getByRole('link', { name: 'Demo' }).click();
+  await page.waitForURL((url) => url.searchParams.get('demo') === '1');
+  await expect(page.getByRole('heading', { name: 'Review the sample payment matches' })).toBeFocused();
+  await page.goBack();
+  await expect(page.getByRole('heading', { name: 'Resolve the ledger' })).toBeFocused();
+  await page.goForward();
+  await expect(page.getByRole('heading', { name: 'Review the sample payment matches' })).toBeFocused();
+});
+
+test('uses the same header navigation on app and legal routes', async ({ page }) => {
+  for (const path of ['/', '/?demo=1', '/privacy/', '/terms/', '/404.html']) {
+    await page.goto(path);
+    await expect(page.locator('.site-header nav')).toHaveText(/Demo[\s\S]*Workspace[\s\S]*Privacy/);
+  }
 });

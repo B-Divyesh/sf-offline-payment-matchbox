@@ -15,7 +15,7 @@ describe('public claims contract', () => {
     for (const claim of claims) {
       expect(claim.claim.trim()).not.toBe('');
       expect(claim.where.trim()).not.toBe('');
-      expect(claim.sandbox).toContain('/demo/');
+      expect(claim.sandbox).toMatch(/\/demo\/|\?demo=1/);
       expect(claim.test).toBe(`npm run test:e2e -- --grep @claim:${claim.id}`);
       expect(browserSources.split(`@claim:${claim.id}`).length - 1, claim.id).toBe(1);
     }

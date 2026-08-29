@@ -4,35 +4,65 @@ import { expect, test } from '@playwright/test';
 const replacementInvoices = 'invoice_id,customer,invoice_date,amount,currency\nINV-201,Harbor Type,2026-08-20,300.00,USD';
 
 test('@claim:offline-reload keeps the sample ledger usable without a network', async ({ page, context }) => {
-  await page.goto('/demo/');
+  await page.goto('/?demo=1');
   await expect(page.getByText('Demo — sample data, nothing is saved to your workspace')).toBeVisible();
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Review a ready-made sample ledger' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Review the sample payment matches' })).toBeVisible();
   await expect(page.getByText('2 invoices to review')).toBeVisible();
 });
 
 test('@claim:csv-report exports every sample invoice and unused payment', async ({ page }) => {
-  await page.goto('/demo/');
+  await page.goto('/?demo=1');
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export current report' }).click();
   const path = await (await pending).path();
   expect(path).not.toBeNull();
   const csv = await readFile(path!, 'utf8');
-  const lines = csv.trim().split('\n');
-  expect(lines).toHaveLength(6);
-  expect(lines.filter((line) => line.startsWith('matched,'))).toHaveLength(1);
-  expect(lines.filter((line) => line.startsWith('open,'))).toHaveLength(2);
-  expect(lines.filter((line) => line.startsWith('unused_payment,'))).toHaveLength(2);
+  const rows = csv.trim().split('\n').map((line) => line.split(','));
+  expect(rows).toHaveLength(6);
+  expect(rows[0]).toEqual(['status', 'invoice_number', 'customer', 'invoice_date', 'invoice_amount', 'currency', 'payment_date', 'payment_amount', 'payment_reference', 'match_method', 'note', 'matched_at']);
+  expect(rows.slice(1).map((row) => row.slice(0, 10))).toEqual([
+    ['matched', 'INV-104', 'Northstar Studio', '2026-08-01', '850', 'USD', '2026-08-08', '850', 'Payment INV-104 Northstar', 'suggested'],
+    ['open', 'INV-105', 'Atlas Works', '2026-08-03', '425.5', 'USD', '', '', '', ''],
+    ['open', 'INV-106', 'Cedar & Finch', '2026-08-05', '1200', 'USD', '', '', '', ''],
+    ['unused_payment', '', '', '', '', 'USD', '2026-08-11', '425.5', 'Transfer INV-105 Atlas', ''],
+    ['unused_payment', '', '', '', '', 'USD', '2026-08-12', '1200', 'Cedar invoice 106', ''],
+  ]);
+  expect(rows[1]?.[11]).toBe('2026-08-12T09:00:00.000Z');
+});
+
+test('@claim:csv-match imports two CSVs and offers the matching payment rows', async ({ page }) => {
+  const invoices = 'invoice_id,customer,invoice_date,amount,currency\nINV-104,Northstar Studio,2026-08-01,850.00,USD\nINV-105,Atlas Works,2026-08-03,425.50,USD';
+  const payments = 'date,amount,description,currency\n2026-08-08,850.00,Payment INV-104 Northstar,USD\n2026-08-11,425.50,Transfer INV-105 Atlas,USD';
+  await page.goto('/?demo=1');
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoices) });
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Import invoices' }).click();
+  await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'payments.csv', mimeType: 'text/csv', buffer: Buffer.from(payments) });
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Import payments' }).click();
+  await expect(page.getByText('INV-104', { exact: true })).toBeVisible();
+  await expect(page.locator('.invoice-cell small').first()).toContainText('Northstar Studio');
+  await expect(page.locator('.suggestion-cell small').first()).toContainText('Payment INV-104 Northstar');
+  await expect(page.locator('.suggestion-list button[data-confirm]')).toHaveCount(2);
+  await page.locator('.suggestion-list button[data-confirm]').first().click();
+  await expect(page.getByRole('cell', { name: 'INV-104 Northstar Studio' })).toBeVisible();
 });
 
 test('@claim:private-workflow sends no ledger data to another origin', async ({ page }) => {
   const origins = new Set<string>();
   page.on('request', (request) => origins.add(new URL(request.url()).origin));
-  await page.goto('/demo/', { waitUntil: 'networkidle' });
+  await page.goto('/?demo=1', { waitUntil: 'networkidle' });
   const productOrigin = new URL(page.url()).origin;
-  await page.getByRole('button', { name: 'Confirm match' }).first().click();
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'sample-invoices.csv', mimeType: 'text/csv', buffer: Buffer.from('invoice_id,customer,invoice_date,amount,currency\nINV-104,Northstar Studio,2026-08-01,850.00,USD\nINV-105,Atlas Works,2026-08-03,425.50,USD') });
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Import invoices' }).click();
+  await page.locator('input[data-file-kind="transaction"]').setInputFiles({ name: 'sample-payments.csv', mimeType: 'text/csv', buffer: Buffer.from('date,amount,description,currency\n2026-08-08,850.00,Payment INV-104 Northstar,USD\n2026-08-11,425.50,Transfer INV-105 Atlas,USD') });
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Import payments' }).click();
+  await page.locator('.suggestion-list button[data-confirm]').first().click();
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export report CSV' }).click();
   await pending;
@@ -40,13 +70,32 @@ test('@claim:private-workflow sends no ledger data to another origin', async ({ 
 });
 
 test('@claim:demo-isolation never writes sample changes into the real workspace', async ({ page }) => {
-  await page.goto('/demo/');
+  await page.goto('/');
+  const before = await page.evaluate(async () => {
+    localStorage.setItem('sb_license:offline-payment-matchbox', 'real-license-sentinel');
+    localStorage.setItem('sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: 1 }));
+    localStorage.setItem('matchbox:mapping:invoice:record|total|client|issued', 'real-mapping-sentinel');
+    await new Promise<void>((resolve, reject) => {
+      const open = indexedDB.open('matchbox-ledger', 1);
+      open.onerror = () => reject(open.error);
+      open.onsuccess = () => { const tx = open.result.transaction('workspace', 'readwrite'); tx.objectStore('workspace').put({ invoices: [{ id: 'REAL-1' }], transactions: [], matches: [], updatedAt: '2000-01-01T00:00:00.000Z' }, 'current'); tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); };
+    });
+    return JSON.stringify({ storage: Object.keys(localStorage).filter((key) => !key.startsWith('demo:')).sort().map((key) => [key, localStorage.getItem(key)]), db: await new Promise<unknown>((resolve, reject) => { const open = indexedDB.open('matchbox-ledger', 1); open.onerror = () => reject(open.error); open.onsuccess = () => { const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }; }) });
+  });
+  await page.goto('/?demo=1');
+  await page.evaluate(() => {
+    localStorage.setItem('demo:sb_license:offline-payment-matchbox', 'demo-license');
+    localStorage.setItem('demo:sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() }));
+  });
+  await page.reload();
   await page.getByRole('button', { name: 'Confirm match' }).first().click();
-  await expect(page.getByText('2', { exact: true }).first()).toBeVisible();
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'custom.csv', mimeType: 'text/csv', buffer: Buffer.from('record,total,client,issued\nDEMO-1,125,Demo Client,2026-08-24') });
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Import invoices' }).click();
   await page.getByRole('button', { name: 'Start for real' }).click();
-  await page.waitForURL((url) => url.pathname === '/');
-  await expect(page.getByText(/rows loaded locally/)).toHaveCount(0);
-  await expect(page.getByRole('heading', { name: 'Confirmed matches' })).toHaveCount(0);
+  await page.waitForURL((url) => url.pathname === '/' && !url.searchParams.has('demo'));
+  const after = await page.evaluate(async () => JSON.stringify({ storage: Object.keys(localStorage).filter((key) => !key.startsWith('demo:')).sort().map((key) => [key, localStorage.getItem(key)]), db: await new Promise<unknown>((resolve, reject) => { const open = indexedDB.open('matchbox-ledger', 1); open.onerror = () => reject(open.error); open.onsuccess = () => { const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }; }) }));
+  expect(after).toBe(before);
 });
 
 test('@claim:local-persistence keeps a confirmed sample match after reload', async ({ page }) => {
@@ -90,29 +139,48 @@ test('@claim:deterministic-review flags competing equal matches instead of confi
   page.once('dialog', (dialog) => void dialog.accept());
   await page.getByRole('button', { name: 'Import payments' }).click();
   await expect(page.getByText('Needs a closer look')).toHaveCount(2);
-  await expect(page.getByRole('button', { name: 'Confirm match' })).toHaveCount(0);
+  await expect(page.locator('.suggestion-list button[data-confirm]')).toHaveCount(0);
 });
 
-test('@claim:json-backup exports every sample record and decision', async ({ page }) => {
-  await page.goto('/demo/');
-  await page.getByRole('button', { name: 'Confirm match' }).first().click();
+test('@claim:json-backup restores every stored field in a separate browser context', async ({ page, browser }) => {
+  const source = 'invoice_id,customer,invoice_date,amount,currency\nINV-104,Northstar Studio,2026-08-01,850.00,USD\nINV-105,Atlas Works,2026-08-03,425.50,USD\nINV-106,Cedar & Finch,2026-08-05,1200.00,USD';
+  await page.goto('/?demo=1');
+  await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'month.csv', mimeType: 'text/csv', buffer: Buffer.from(source) });
+  await page.getByRole('checkbox', { name: /Keep a copy/ }).check();
+  page.once('dialog', (dialog) => void dialog.accept());
+  await page.getByRole('button', { name: 'Import invoices' }).click();
+  await page.getByRole('button', { name: 'Choose another' }).first().click();
+  const dialog = page.getByRole('dialog', { name: /Match INV-/ });
+  await dialog.getByLabel('Payment').selectOption({ index: 1 });
+  await dialog.getByLabel('Why this is the right match').fill('Imported remittance evidence');
+  await dialog.getByRole('button', { name: 'Save manual match' }).click();
   const pending = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Export backup' }).click();
   const path = await (await pending).path();
-  const backup = JSON.parse(await readFile(path!, 'utf8')) as { invoices: unknown[]; transactions: unknown[]; matches: unknown[] };
-  expect(backup.invoices).toHaveLength(3);
-  expect(backup.transactions).toHaveLength(3);
-  expect(backup.matches).toHaveLength(2);
-  await page.getByRole('button', { name: 'Reset demo' }).click();
-  await expect(page.getByRole('row')).toHaveCount(2);
-  await page.locator('#backup-input').setInputFiles(path!);
-  await expect(page.getByRole('row')).toHaveCount(3);
+  const expected = JSON.parse(await readFile(path!, 'utf8')) as Record<string, unknown>;
+
+  const secondContext = await browser.newContext();
+  const secondPage = await secondContext.newPage();
+  try {
+    await secondPage.goto('http://127.0.0.1:4173/?demo=1');
+    await secondPage.locator('#backup-input').setInputFiles(path!);
+    const restoredDownload = secondPage.waitForEvent('download');
+    await secondPage.getByRole('button', { name: 'Export backup' }).click();
+    const restoredPath = await (await restoredDownload).path();
+    const restored = JSON.parse(await readFile(restoredPath!, 'utf8')) as Record<string, unknown>;
+    expect(restored.invoices).toEqual(expected.invoices);
+    expect(restored.transactions).toEqual(expected.transactions);
+    expect(restored.matches).toEqual(expected.matches);
+    expect(restored.sourceFiles).toEqual(expected.sourceFiles);
+  } finally {
+    await secondContext.close();
+  }
 });
 
 test('@claim:plus-batch confirms all clear sample suggestions together', async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('sb_license:offline-payment-matchbox', 'demo-license');
-    localStorage.setItem('sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() }));
+    localStorage.setItem('demo:sb_license:offline-payment-matchbox', 'demo-license');
+    localStorage.setItem('demo:sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() }));
   });
   await page.goto('/demo/');
   await expect(page.getByRole('heading', { name: 'Matchbox Plus costs $19 once' })).toBeVisible();
@@ -123,8 +191,8 @@ test('@claim:plus-batch confirms all clear sample suggestions together', async (
 
 test('@claim:plus-column-mappings restores every saved selection for repeat headings', async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('sb_license:offline-payment-matchbox', 'mapping-fixture-license');
-    localStorage.setItem('sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() }));
+    localStorage.setItem('demo:sb_license:offline-payment-matchbox', 'mapping-fixture-license');
+    localStorage.setItem('demo:sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() }));
   });
   const customInvoices = 'record,total,client,issued\nCUSTOM-1,125.00,Paper Kite Studio,2026-08-24';
   await page.goto('/demo/');
@@ -156,6 +224,27 @@ test('@claim:manual-note blocks a manual match until its audit note is present',
   await dialog.getByLabel('Why this is the right match').fill('Checked against the client remittance email');
   await dialog.getByRole('button', { name: 'Save manual match' }).click();
   await expect(page.getByText('Checked against the client remittance email')).toBeVisible();
+});
+
+test('@claim:free-core keeps manual review, reports, backups, and offline use available without a license', async ({ page, context }) => {
+  await page.goto('/?demo=1');
+  await expect(page.getByRole('button', { name: 'Confirm all strong matches' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Choose another' }).first().click();
+  const dialog = page.getByRole('dialog', { name: /Match INV-/ });
+  await dialog.getByLabel('Payment').selectOption({ index: 1 });
+  await dialog.getByLabel('Why this is the right match').fill('Verified against the remittance note');
+  await dialog.getByRole('button', { name: 'Save manual match' }).click();
+  await expect(page.getByText('Verified against the remittance note')).toBeVisible();
+  const report = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export report CSV' }).click();
+  expect((await report).suggestedFilename()).toMatch(/\.csv$/);
+  const backup = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export backup' }).click();
+  expect((await backup).suggestedFilename()).toMatch(/\.json$/);
+  await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
+  await context.setOffline(true);
+  await page.reload();
+  await expect(page.getByText('Verified against the remittance note')).toBeVisible();
 });
 
 test('@claim:workspace-clearing removes the current record from demo IndexedDB', async ({ page }) => {
@@ -215,7 +304,7 @@ test('@claim:license-restore activates Plus from a valid license in a clean brow
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok', expires_at: null }) });
   });
   await page.goto('/demo/');
-  await page.getByRole('button', { name: 'Get Plus' }).click();
+  await page.getByRole('button', { name: 'View Plus features' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Matchbox Plus' });
   await dialog.getByLabel('Have a license? Paste it here').fill('valid-license-from-another-device');
   await dialog.getByRole('button', { name: 'Restore purchase' }).click();
@@ -223,8 +312,41 @@ test('@claim:license-restore activates Plus from a valid license in a clean brow
   await expect(dialog.getByText('Plus is active', { exact: true })).toBeVisible();
   await expect(dialog.getByText('Matchbox Plus is active on this device.')).toBeVisible();
   expect(verifiedToken).toBe('valid-license-from-another-device');
-  expect(await page.evaluate(() => localStorage.getItem('sb_license:offline-payment-matchbox'))).toBe('valid-license-from-another-device');
+  expect(await page.evaluate(() => localStorage.getItem('demo:sb_license:offline-payment-matchbox'))).toBe('valid-license-from-another-device');
   await dialog.getByRole('button', { name: 'Close dialog' }).click();
   await page.getByRole('button', { name: 'Confirm all strong matches' }).click();
   await expect(page.getByRole('heading', { name: 'Every invoice has a match' })).toBeVisible();
+});
+
+test('@claim:billing-routing uses only the documented Sociobot checkout and verification endpoints', async ({ page }) => {
+  let verificationUrl = '';
+  await page.route('https://api.sociobot.in/api/v1/products/offline-payment-matchbox/verify?**', async (route) => {
+    verificationUrl = route.request().url();
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'invalid' }) });
+  });
+  await page.goto('/?demo=1');
+  await page.getByRole('button', { name: 'View Plus features' }).first().click();
+  const dialog = page.getByRole('dialog', { name: 'Matchbox Plus' });
+  await expect(dialog.getByRole('link', { name: 'Buy Matchbox Plus' })).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/offline-payment-matchbox/checkout');
+  await dialog.getByLabel('Have a license? Paste it here').fill('routing-fixture');
+  await dialog.getByRole('button', { name: 'Restore purchase' }).click();
+  expect(verificationUrl).toBe('https://api.sociobot.in/api/v1/products/offline-payment-matchbox/verify?license=routing-fixture');
+});
+
+test('@claim:license-request-privacy sends no reconciliation fields with a license check', async ({ page }) => {
+  let requestDetails: { url: string; headers: Record<string, string>; body: string | null } | null = null;
+  await page.route('https://api.sociobot.in/api/v1/products/offline-payment-matchbox/verify?**', async (route) => {
+    requestDetails = { url: route.request().url(), headers: route.request().headers(), body: route.request().postData() };
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ valid: true, reason: 'ok' }) });
+  });
+  await page.goto('/?demo=1');
+  await page.getByRole('button', { name: 'View Plus features' }).first().click();
+  const dialog = page.getByRole('dialog', { name: 'Matchbox Plus' });
+  await dialog.getByLabel('Have a license? Paste it here').fill('privacy-fixture-token');
+  await dialog.getByRole('button', { name: 'Restore purchase' }).click();
+  expect(requestDetails).not.toBeNull();
+  const serialized = JSON.stringify(requestDetails).toLowerCase();
+  expect(serialized).toContain('privacy-fixture-token');
+  for (const privateValue of ['inv-104', 'northstar', '850', 'transfer', 'matched_at', 'matchbox-report']) expect(serialized).not.toContain(privateValue);
+  expect(requestDetails?.body).toBeNull();
 });

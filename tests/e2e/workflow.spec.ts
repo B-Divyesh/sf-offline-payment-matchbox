@@ -49,7 +49,7 @@ test('legal pages and mobile layout retain landmarks', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/privacy/');
   await expect(page.getByRole('main')).toBeVisible();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy, kept simple.');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('How Matchbox Ledger stores your data');
   await page.goto('/terms/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Terms of use.');
 });
@@ -134,14 +134,20 @@ test('makes only same-origin requests in the default private workflow', async ({
   expect([...origins]).toEqual([new URL(page.url()).origin]);
 });
 
-test('@claim:daily-license-check keeps one daily result visible and focused', async ({ page }) => {
+test('@claim:daily-license-check rechecks only after the full 86,400,000 millisecond cache window', async ({ page }) => {
   let verifies = 0;
+  await page.addInitScript(() => {
+    const originalNow = Date.now;
+    Date.now = () => Number(localStorage.getItem('qa-license-now') ?? originalNow());
+  });
   await page.route('https://api.sociobot.in/api/v1/products/offline-payment-matchbox/verify?**', async (route) => {
     verifies += 1;
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'invalid', expires_at: null }) });
   });
-  await page.goto('/demo/');
-  await page.getByRole('button', { name: 'Get Plus' }).click();
+  await page.goto('/?demo=1');
+  await page.evaluate(() => localStorage.setItem('qa-license-now', '1000'));
+  await page.reload();
+  await page.getByRole('button', { name: 'View Plus features' }).first().click();
   const dialog = page.getByRole('dialog', { name: 'Matchbox Plus' });
   await dialog.getByLabel('Have a license? Paste it here').fill('qa-invalid-license-regression');
   await dialog.getByRole('button', { name: 'Restore purchase' }).click();
@@ -152,7 +158,12 @@ test('@claim:daily-license-check keeps one daily result visible and focused', as
   await expect(notice).toBeFocused();
   expect(verifies).toBe(1);
 
+  await page.evaluate(() => localStorage.setItem('qa-license-now', String(1000 + 86_400_000 - 1)));
   await page.reload();
   await page.waitForLoadState('networkidle');
   expect(verifies).toBe(1);
+  await page.evaluate(() => localStorage.setItem('qa-license-now', String(1000 + 86_400_000 + 1)));
+  await page.reload();
+  await page.waitForLoadState('networkidle');
+  expect(verifies).toBe(2);
 });

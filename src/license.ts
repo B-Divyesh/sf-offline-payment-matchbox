@@ -6,6 +6,21 @@ const BILLING_BASE = (import.meta.env.VITE_BILLING_BASE as string | undefined) ?
 export type LicenseState = { token: string; unlocked: boolean; checking: boolean; notice: string };
 let state: LicenseState = { token: '', unlocked: false, checking: false, notice: '' };
 const listeners = new Set<(state: LicenseState) => void>();
+let demoStorage = false;
+
+function keyFor(key: string): string {
+  return demoStorage ? `demo:${key}` : key;
+}
+
+/** Keeps every demo preference and license fixture out of the real workspace. */
+export function configureLicense(demo: boolean): void {
+  demoStorage = demo;
+  state = { token: '', unlocked: false, checking: false, notice: '' };
+}
+
+export function scopedStorageKey(key: string): string {
+  return keyFor(key);
+}
 
 function emit() {
   listeners.forEach((listener) => listener({ ...state }));
@@ -25,11 +40,11 @@ export async function initLicense(): Promise<void> {
   const url = new URL(window.location.href);
   const returned = url.searchParams.get('license');
   if (returned) {
-    localStorage.setItem(TOKEN_KEY, returned);
+    localStorage.setItem(keyFor(TOKEN_KEY), returned);
     url.searchParams.delete('license');
     history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
   }
-  const token = returned ?? localStorage.getItem(TOKEN_KEY) ?? '';
+  const token = returned ?? localStorage.getItem(keyFor(TOKEN_KEY)) ?? '';
   const cached = readVerdict();
   state = { token, unlocked: Boolean(token && (returned || cached?.valid)), checking: false, notice: '' };
   emit();
@@ -40,7 +55,7 @@ export async function initLicense(): Promise<void> {
 
 function readVerdict(): { valid: boolean; checkedAt: number } | null {
   try {
-    return JSON.parse(localStorage.getItem(VERDICT_KEY) ?? 'null') as { valid: boolean; checkedAt: number } | null;
+    return JSON.parse(localStorage.getItem(keyFor(VERDICT_KEY)) ?? 'null') as { valid: boolean; checkedAt: number } | null;
   } catch {
     return null;
   }
@@ -54,7 +69,7 @@ export async function verifyLicense(token = state.token): Promise<void> {
     const response = await fetch(`${BILLING_BASE}/api/v1/products/${SLUG}/verify?license=${encodeURIComponent(token)}`);
     if (!response.ok) throw new Error('Verification service unavailable');
     const result = (await response.json()) as { valid: boolean; reason?: string };
-    localStorage.setItem(VERDICT_KEY, JSON.stringify({ valid: result.valid, checkedAt: Date.now() }));
+    localStorage.setItem(keyFor(VERDICT_KEY), JSON.stringify({ valid: result.valid, checkedAt: Date.now() }));
     state = {
       token,
       unlocked: result.valid,
@@ -70,6 +85,6 @@ export async function verifyLicense(token = state.token): Promise<void> {
 export async function restoreLicense(token: string): Promise<void> {
   const clean = token.trim();
   if (!clean) return;
-  localStorage.setItem(TOKEN_KEY, clean);
+  localStorage.setItem(keyFor(TOKEN_KEY), clean);
   await verifyLicense(clean);
 }

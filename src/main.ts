@@ -5,7 +5,7 @@ import { escapeCsv, invoicesFromCsv, parseCsv, suggestInvoiceMapping, suggestTra
 import { isCalendarDate } from './dates';
 import { clearLedger, emptyLedger, loadLedger, saveLedger } from './db';
 import { sampleLedger } from './demo';
-import { checkoutUrl, initLicense, restoreLicense, subscribeLicense, type LicenseState } from './license';
+import { checkoutUrl, configureLicense, initLicense, restoreLicense, scopedStorageKey, subscribeLicense, type LicenseState } from './license';
 import { suggestionsFor, summarize } from './matcher';
 import type { ImportKind, InvoiceMapping, Ledger, Match, ParsedCsv, TransactionMapping } from './types';
 
@@ -19,7 +19,8 @@ type PendingImport = {
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const isDemo = location.pathname === '/demo' || location.pathname === '/demo/' || new URLSearchParams(location.search).get('demo') === '1';
-const BUILD_LABEL = 'v1.0.2 · repair 3';
+const BUILD_LABEL = 'v1.0.3 · polish 1';
+const mappingKey = (kind: ImportKind, headers: string[]) => scopedStorageKey(`matchbox:mapping:${kind}:${headers.join('|')}`);
 
 let ledger: Ledger = emptyLedger();
 let pending: PendingImport | null = null;
@@ -32,6 +33,7 @@ let licenseDialogOpen = false;
 
 document.title = isDemo ? 'Demo — Matchbox Ledger' : 'Matchbox Ledger — match payments to invoices';
 document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', isDemo ? 'https://offline-payment-matchbox.sociobot.in/demo/' : 'https://offline-payment-matchbox.sociobot.in/');
+configureLicense(isDemo);
 
 const money = (amount: number, currency = '') => {
   try {
@@ -65,22 +67,22 @@ function render(): void {
     ${isDemo ? `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved to your workspace</strong><span><button type="button" data-action="reset-demo">Reset demo</button><button type="button" data-action="start-real">Start for real</button></span></aside>` : ''}
     <header class="site-header">
       <a class="brand" href="/" aria-label="Matchbox Ledger home"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span>Matchbox Ledger</span></a>
-      <nav aria-label="Utility navigation">
-        <a href="/demo/">Demo</a>
-        <a href="#workspace">Workspace</a>
-        <button class="quiet-button" type="button" data-action="open-license">${license.unlocked ? 'Plus active' : 'Get Plus'}</button>
+      <nav aria-label="Site navigation">
+        <a href="/?demo=1">Demo</a>
+        <a href="/#workspace">Workspace</a>
+        <a href="/privacy/">Privacy</a>
       </nav>
     </header>
     <main id="main">
       <section class="hero ${hasFiles ? 'hero-compact' : ''}">
         <div class="hero-copy">
-          <p class="eyebrow">Local payment reconciliation</p>
-          <h1>${isDemo ? 'Review a ready-made sample ledger' : 'Match payments to invoices from two CSVs'}</h1>
+          <p class="eyebrow">${isDemo ? 'Sample payment matches' : 'Match downloaded payments to invoices'}</p>
+          <h1 tabindex="-1">${isDemo ? 'Review the sample payment matches' : 'Match payments to invoices from two CSVs'}</h1>
           <p class="lede">${isDemo ? 'Explore three freelancer invoices and their downloaded payments. Demo changes stay separate from your workspace.' : 'For freelancers who reconcile invoices in spreadsheets or offline tools.'}</p>
-          ${isDemo ? `<div class="demo-summary" aria-label="Sample ledger summary"><strong>${stats.matched} matched</strong><span>${stats.open} invoices to review</span><a href="#match-title">Review suggestions</a></div>` : `<div class="hero-actions"><a class="primary-button" href="/demo/">Try it with sample data</a><span>Opens a separate ledger with three invoices.</span><a class="secondary-button" href="#workspace">Choose your invoice CSV</a></div><ul class="plain-facts"><li>${icon('check')} Works offline after the first visit</li><li>${icon('lock')} Files stay on this device</li><li>${icon('spark')} Free matcher · Plus costs $19 once</li></ul>`}
-          <div class="privacy-stamp">${icon('lock')} <span><strong>Private by design</strong><small>Parsing and matching stay in this browser</small></span></div>
+          ${isDemo ? demoPreview() : `<div class="hero-actions"><a class="primary-button" href="/?demo=1">Try it with sample data</a><span>Opens a separate ledger with three invoices.</span><a class="secondary-button" href="#workspace">Choose your invoice CSV</a></div><ul class="plain-facts"><li>${icon('check')} Works offline after the first visit</li><li>${icon('lock')} Files stay on this device</li><li>${icon('spark')} Free matcher · Plus costs $19 once</li></ul>`}
+          <div class="privacy-stamp">${icon('lock')} <span><strong>Your CSV data stays in this browser</strong><small>Source CSV text is saved only when you choose it.</small></span></div>
         </div>
-        ${hasFiles ? '' : `<figure class="hero-art"><img src="${trayArtwork}" width="1200" height="800" alt="Two porcelain sorting trays connected by one cobalt matchstick" fetchpriority="high" decoding="async"><figcaption>Two lists, one deliberate match.</figcaption></figure>`}
+        ${hasFiles ? '' : `<figure class="hero-art"><img src="${trayArtwork}" width="1200" height="800" alt="Two porcelain sorting trays connected by one cobalt matchstick" fetchpriority="high" decoding="async"><figcaption>Invoice and payment rows appear side by side.</figcaption></figure>`}
       </section>
 
       <section class="how-section" aria-labelledby="how-title">
@@ -90,7 +92,7 @@ function render(): void {
 
       <section class="workbench" id="workspace" aria-labelledby="workspace-title">
         <div class="section-heading">
-          <div><p class="step-label">01 · Prepare</p><h2 id="workspace-title">Set your files on the bench</h2></div>
+          <div><p class="step-label">01 · Prepare</p><h2 id="workspace-title" tabindex="-1">Import your invoice and payment CSVs</h2></div>
           <p>CSV only · nothing leaves this device</p>
         </div>
         <div class="import-grid">
@@ -102,7 +104,7 @@ function render(): void {
 
       ${hasFiles ? `<section class="ledger-section" aria-labelledby="match-title">
         <div class="section-heading">
-          <div><p class="step-label">02 · Review</p><h2 id="match-title">Resolve the ledger</h2></div>
+          <div><p class="step-label">02 · Review</p><h2 id="match-title" tabindex="-1">Resolve the ledger</h2></div>
           <div class="button-row">${ledger.invoices.length && ledger.transactions.length ? '<button class="secondary-button" type="button" data-action="export-report">'+icon('download')+' Export current report</button>' : ''}${license.unlocked ? '<button class="secondary-button" type="button" data-action="batch-confirm">'+icon('spark')+' Confirm all strong matches</button>' : ''}</div>
         </div>
         <div class="tally" aria-label="Reconciliation summary">
@@ -121,16 +123,16 @@ function render(): void {
       </section>` : ''}
 
       <section class="data-section" id="your-data" aria-labelledby="data-title">
-        <div class="section-heading"><div><p class="step-label">Local custody</p><h2 id="data-title">Your data, in your hands</h2></div></div>
+        <div class="section-heading"><div><p class="step-label">Local data controls</p><h2 id="data-title">Back up or clear your local workspace</h2></div></div>
         <div class="data-grid">
           <div><h3>Back up this workspace</h3><p>Export invoices, payments, matches, and notes as one JSON file. Import it later on this or another device.</p><div class="button-row"><button class="secondary-button" type="button" data-action="export-json">Export backup</button><label class="secondary-button file-button">Import backup<input id="backup-input" type="file" accept="application/json,.json"></label></div></div>
           <div><h3>Start a clean month</h3><p>Removing a workspace clears Matchbox data from this browser. Export a backup first if you may need it.</p><button class="danger-button" type="button" data-action="clear">Clear local workspace</button></div>
         </div>
       </section>
 
-      <section class="plus-section" aria-labelledby="plus-title"><div><p class="step-label">Optional supporter tier</p><h2 id="plus-title">Matchbox Plus costs $19 once</h2><p>The free matcher includes manual review, reports, backups, and offline use. Plus confirms all clear strong suggestions together and remembers repeat column mappings.</p></div><button class="primary-button" type="button" data-action="open-license">View Matchbox Plus</button></section>
+      <section class="plus-section" aria-labelledby="plus-title"><div><p class="step-label">Paid features</p><h2 id="plus-title">Matchbox Plus costs $19 once</h2><p>The free matcher includes manual review, reports, backups, and offline use. Plus confirms all clear strong suggestions together and remembers repeat column mappings.</p></div><button class="primary-button" type="button" data-action="open-license">View Plus features</button></section>
     </main>
-    <footer><p>Match payments to invoices from two CSVs.</p><p><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><button class="link-button" type="button" data-action="open-license">Matchbox Plus</button></p><p class="art-credit">Built by Param Factory · ${BUILD_LABEL} · Still-life artwork generated for this product with the factory image model.</p></footer>
+    <footer><p>Match payments to invoices from two CSVs.</p><p><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><button class="link-button" type="button" data-action="open-license">View Plus features</button></p><p class="art-credit">Built by Param Factory · ${BUILD_LABEL} · Still-life artwork generated for this product with the factory image model.</p></footer>
     <div class="network-pill ${navigator.onLine ? '' : 'is-offline'}" role="status"><span></span>${navigator.onLine ? 'Ready offline' : 'You are offline — matching still works'}</div>
     <div id="live-status" class="sr-only" aria-live="polite">${html(statusMessage)}</div>
     ${manualDialog()}
@@ -143,11 +145,20 @@ function render(): void {
   }
 }
 
+function demoPreview(): string {
+  const stats = summarize(ledger);
+  const invoice = ledger.invoices.find((item) => item.id === 'INV-105') ?? ledger.invoices[0];
+  const transaction = ledger.transactions.find((item) => item.id === 'demo-payment-2') ?? ledger.transactions[0];
+  if (!invoice || !transaction) return '';
+  const confirmed = ledger.matches.some((match) => match.invoiceId === invoice.id);
+  return `<div class="demo-preview" aria-label="Sample match preview"><div class="demo-summary"><strong>${stats.matched} matched</strong><span>${stats.open} invoices to review</span></div><div class="demo-row"><div><span>INVOICE</span><strong>${html(invoice.id)} · ${html(invoice.customer)}</strong><b>${money(invoice.amount, invoice.currency)}</b></div><div><span>PAYMENT</span><strong>${html(transaction.reference)}</strong><b>${money(transaction.amount, transaction.currency)}</b></div></div>${confirmed ? '<a class="secondary-button" href="#match-title">Review confirmed match</a>' : `<button class="primary-button" type="button" data-confirm="${html(invoice.id)}" data-transaction="${html(transaction.id)}">Confirm match</button>`}</div>`;
+}
+
 function importTray(kind: ImportKind, count: number, title: string, hint: string, sample: string): string {
   return `<article class="import-tray ${count ? 'has-data' : ''}">
     <div class="tray-icon">${count ? icon('check') : icon('file')}</div>
     <div><p class="tray-kicker">${kind === 'invoice' ? 'List A' : 'List B'}</p><h3>${title}</h3><p>${count ? `${count} row${count === 1 ? '' : 's'} loaded locally` : hint}</p></div>
-    <div class="tray-actions"><label class="primary-button file-button">${count ? 'Replace CSV' : 'Choose CSV'}<input data-file-kind="${kind}" type="file" accept="text/csv,.csv"></label><button type="button" class="text-button" data-sample="${encodeURIComponent(sample)}" data-name="${kind}-sample.csv">Sample CSV</button></div>
+    <div class="tray-actions"><label class="primary-button file-button">${count ? 'Replace CSV' : 'Choose CSV'}<input data-file-kind="${kind}" type="file" accept="text/csv,.csv"></label><button type="button" class="text-button" data-sample="${encodeURIComponent(sample)}" data-name="${kind}-sample.csv">Download sample CSV</button></div>
   </article>`;
 }
 
@@ -196,7 +207,7 @@ function manualDialog(): string {
 }
 
 function licenseDialog(): string {
-  return `<dialog id="license-dialog" aria-labelledby="license-title"><div class="dialog-shell license-shell"><div class="dialog-head"><div><p class="step-label">One-time supporter unlock</p><h2 id="license-title">Matchbox Plus</h2></div><button class="icon-button" type="button" data-action="close-license" aria-label="Close dialog">×</button></div><p class="price"><strong>$19</strong> once · no subscription</p><p>The complete matcher, manual review, reports, backups, and offline use are free. Plus confirms clear strong suggestions together. It also remembers column mappings.</p>${license.unlocked ? `<div class="license-active" id="license-notice" role="status" tabindex="-1">${icon('check')}<div><strong>Plus is active</strong><small>${html(license.notice || 'License saved on this device.')}</small></div></div>` : `<a class="primary-button full-button" href="${checkoutUrl()}">Buy Matchbox Plus</a><p class="legal-note">Checkout is hosted by Sociobot. Sociobot/Dodo is the merchant of record and handles refunds. A refund revokes the license.</p><form id="restore-form" aria-busy="${license.checking}"><label>Have a license? Paste it here<input name="license" autocomplete="off" spellcheck="false" required></label><button class="secondary-button" type="submit" ${license.checking ? 'disabled' : ''}>${license.checking ? 'Checking license…' : 'Restore purchase'}</button></form>${license.notice ? `<p class="notice" id="license-notice" role="status" aria-live="polite" tabindex="-1">${html(license.notice)}</p>` : ''}`}<p class="legal-note"><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p></div></dialog>`;
+  return `<dialog id="license-dialog" aria-labelledby="license-title"><div class="dialog-shell license-shell"><div class="dialog-head"><div><p class="step-label">Buy or restore Matchbox Plus</p><h2 id="license-title">Matchbox Plus</h2></div><button class="icon-button" type="button" data-action="close-license" aria-label="Close dialog">×</button></div><p class="price"><strong>$19</strong> once · no subscription</p><p>The complete matcher, manual review, reports, backups, and offline use are free. Plus confirms clear strong suggestions together. It also remembers column mappings.</p>${license.unlocked ? `<div class="license-active" id="license-notice" role="status" tabindex="-1">${icon('check')}<div><strong>Plus is active</strong><small>${html(license.notice || 'License saved on this device.')}</small></div></div>` : `<a class="primary-button full-button" href="${checkoutUrl()}">Buy Matchbox Plus</a><p class="legal-note">Checkout is hosted by Sociobot. See the checkout page for merchant and refund terms.</p><form id="restore-form" aria-busy="${license.checking}"><label>Have a license? Paste it here<input name="license" autocomplete="off" spellcheck="false" required></label><button class="secondary-button" type="submit" ${license.checking ? 'disabled' : ''}>${license.checking ? 'Checking license…' : 'Restore purchase'}</button></form>${license.notice ? `<p class="notice" id="license-notice" role="status" aria-live="polite" tabindex="-1">${html(license.notice)}</p>` : ''}`}<p class="legal-note"><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p></div></dialog>`;
 }
 
 async function persist(message: string): Promise<void> {
@@ -214,7 +225,7 @@ async function handleFile(file: File, kind: ImportKind): Promise<void> {
   const text = await file.text();
   const csv = parseCsv(text);
   pending = { kind, fileName: file.name, text, csv, mapping: kind === 'invoice' ? suggestInvoiceMapping(csv.headers) : suggestTransactionMapping(csv.headers) };
-  const saved = license.unlocked ? localStorage.getItem(`matchbox:mapping:${kind}:${csv.headers.join('|')}`) : null;
+  const saved = license.unlocked ? localStorage.getItem(mappingKey(kind, csv.headers)) : null;
   if (saved) pending.mapping = JSON.parse(saved) as InvoiceMapping | TransactionMapping;
   statusMessage = `${csv.rows.length} rows found in ${file.name}. Check the column mapping.`;
   render();
@@ -241,7 +252,7 @@ async function applyImport(form: HTMLFormElement): Promise<void> {
   if (values.get('keepSource')) {
     ledger.sourceFiles = [...(ledger.sourceFiles ?? []).filter((source) => source.kind !== importKind), { kind: importKind, name: pending.fileName, text: pending.text, savedAt: new Date().toISOString() }];
   } else ledger.sourceFiles = (ledger.sourceFiles ?? []).filter((source) => source.kind !== importKind);
-  if (license.unlocked) localStorage.setItem(`matchbox:mapping:${importKind}:${pending.csv.headers.join('|')}`, JSON.stringify(mapping));
+  if (license.unlocked) localStorage.setItem(mappingKey(importKind, pending.csv.headers), JSON.stringify(mapping));
   const message = `${pending.csv.rows.length} ${pending.kind === 'invoice' ? 'invoices' : 'payments'} imported.`;
   pending = null;
   await persist(message);
@@ -315,6 +326,12 @@ app.addEventListener('submit', async (event) => {
 app.addEventListener('click', async (event) => {
   const target = (event.target as HTMLElement).closest<HTMLElement>('button, a');
   if (!target) return;
+  if (target instanceof HTMLAnchorElement) {
+    const destination = new URL(target.href, location.href);
+    if (destination.origin === location.origin && (destination.pathname !== location.pathname || destination.search !== location.search)) {
+      sessionStorage.setItem('matchbox:route-focus', `${destination.pathname}${destination.search}`);
+    }
+  }
   if (isDemo && target instanceof HTMLAnchorElement) {
     const destination = new URL(target.href, location.href);
     const staysInDemo = (destination.pathname === '/demo' || destination.pathname === '/demo/') || (destination.pathname === location.pathname && destination.hash);
@@ -354,7 +371,7 @@ app.addEventListener('click', async (event) => {
   else if (target.dataset.action === 'reset-demo' && isDemo) {
     ledger = sampleLedger(); pending = null; manualInvoiceId = ''; showAllOpen = false; await persist('Demo reset to its original sample data.');
   } else if (target.dataset.action === 'start-real' && isDemo) {
-    await clearLedger(true); window.location.assign('/');
+    await clearLedger(true); sessionStorage.setItem('matchbox:route-focus', '/'); window.location.assign('/');
   }
   else if (target.dataset.action === 'batch-confirm' && license.unlocked) {
     const open = ledger.invoices.filter((invoice) => !ledger.matches.some((match) => match.invoiceId === invoice.id));
@@ -369,6 +386,28 @@ app.addEventListener('click', async (event) => {
 
 window.addEventListener('online', render);
 window.addEventListener('offline', render);
+
+function focusRouteDestination(): void {
+  window.setTimeout(() => {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const routeKey = `${location.pathname}${location.search}`;
+    const historyTraversal = performance.getEntriesByType('navigation').some((entry) => (entry as PerformanceNavigationTiming).type === 'back_forward');
+    const routeNavigation = sessionStorage.getItem('matchbox:route-focus') === routeKey || historyTraversal;
+    if (!id && !routeNavigation) return;
+    if (routeNavigation) sessionStorage.removeItem('matchbox:route-focus');
+    const hashTarget = id ? document.getElementById(id) : null;
+    const target = hashTarget?.querySelector<HTMLElement>('h1, h2, h3') ?? hashTarget ?? document.querySelector<HTMLElement>('main h1');
+    if (!target) return;
+    target.setAttribute('tabindex', '-1');
+    if (id) target.scrollIntoView({ block: 'start' });
+    target.focus({ preventScroll: Boolean(id) });
+    statusMessage = id ? `${target.textContent?.trim() ?? 'Section'} opened.` : `${document.title} opened.`;
+    document.querySelector<HTMLElement>('#live-status')!.textContent = statusMessage;
+  }, 50);
+}
+
+window.addEventListener('hashchange', focusRouteDestination);
+window.addEventListener('pageshow', (event) => { if (event.persisted) focusRouteDestination(); });
 
 app.addEventListener('close', (event) => {
   if ((event.target as HTMLElement).id === 'license-dialog') licenseDialogOpen = false;
@@ -406,6 +445,7 @@ async function start(): Promise<void> {
   catch { ledger = emptyLedger(); statusMessage = 'Local storage is unavailable. You can work, but refresh will clear this session.'; }
   started = true;
   render();
+  focusRouteDestination();
   void initLicense();
   void registerServiceWorker();
 }

@@ -2,17 +2,17 @@
 
 Match payments to invoices from two CSVs. Matchbox Ledger is for freelancers who reconcile downloaded payments in spreadsheets or offline invoice tools.
 
-Parsing and matching stay on this device. The app flags competing matches, requires a note for manual matches, and exports the full reconciliation record.
+Parsing and matching stay on this device. The app flags competing matches, requires a note for manual matches, and exports the full report.
 
 Live: <https://offline-payment-matchbox.sociobot.in>
 
-Demo: <https://offline-payment-matchbox.sociobot.in/demo/>. It opens three invoices and three payments in the separate `demo:matchbox-ledger` database. Use **Reset demo** to restore the sample or **Start for real** to discard it.
+Demo: <https://offline-payment-matchbox.sociobot.in/?demo=1>. It opens three invoices and three payments in the separate `demo:matchbox-ledger` database. Use **Reset demo** to restore the sample or **Start for real** to discard it.
 
 ## How it works
 
-1. Import an invoice CSV and map its invoice number and amount columns. Customer, dates, and currency are optional evidence.
-2. Import a payment CSV and map its date and amount columns. Reference and currency are optional evidence.
-3. Review suggestions. Matchbox scores amount, currency, references, names, and dates. Competing matches are flagged and never merged.
+1. Import an invoice CSV and map its invoice number and amount columns.
+2. Import a payment CSV and map its date and amount columns.
+3. Review suggestions. Competing matches are flagged and never merged.
 4. Confirm suggestions or choose another payment. Every manual match requires an audit note.
 5. Export a report CSV containing matched invoices, open invoices, unused payments, evidence method, notes, and timestamps.
 
@@ -24,7 +24,7 @@ Manual review, CSV reports, backups, and offline use are free. Matchbox Plus cos
 
 Checkout and license verification use the Sociobot billing API. Reconciliation rows and totals are not included in license checks.
 
-Set `VITE_BILLING_BASE` at build time to override the production default (`https://api.sociobot.in`), for example when the factory uses its pilot environment. No product ID or secret is stored in this repository.
+Set `VITE_BILLING_BASE` at build time to override the production default (`https://api.sociobot.in`), for example when the factory uses its pilot environment.
 
 ## Develop
 

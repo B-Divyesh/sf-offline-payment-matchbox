@@ -14,6 +14,13 @@
     "sandbox": "fresh /demo/ sample; download report; assert header and one output row per sample record"
   },
   {
+    "id": "csv-match",
+    "claim": "Matches payments to invoices from two CSVs",
+    "where": "landing, README",
+    "test": "npm run test:e2e -- --grep @claim:csv-match",
+    "sandbox": "fresh /?demo=1; replace the sample with shipped invoice and payment CSV fixtures; assert realistic suggestions and confirm one pair"
+  },
+  {
     "id": "private-workflow",
     "claim": "Parsing, matching, and report export keep reconciliation data on this device",
     "where": "landing, workspace, privacy page, README",
@@ -63,6 +70,13 @@
     "sandbox": "fresh /demo/ sample with a locally cached valid fixture verdict; assert price; run batch confirm; assert every invoice is matched"
   },
   {
+    "id": "free-core",
+    "claim": "The free matcher includes manual review, reports, backups, and offline use",
+    "where": "landing, Plus dialog, README, terms",
+    "test": "npm run test:e2e -- --grep @claim:free-core",
+    "sandbox": "fresh /?demo=1 without a license; save a manual match, export CSV and JSON, then reload the saved workspace offline"
+  },
+  {
     "id": "plus-column-mappings",
     "claim": "Matchbox Plus remembers repeat column mappings",
     "where": "landing, Plus dialog, README, terms",
@@ -82,6 +96,20 @@
     "where": "privacy page, license dialog",
     "test": "npm run test:e2e -- --grep @claim:daily-license-check",
     "sandbox": "fresh /demo/ sample with recorded invalid verification response; restore once; reload; assert no second request"
+  },
+  {
+    "id": "billing-routing",
+    "claim": "Checkout and license verification use the Sociobot billing API",
+    "where": "Plus dialog, README",
+    "test": "npm run test:e2e -- --grep @claim:billing-routing",
+    "sandbox": "fresh /?demo=1; inspect the checkout link and record a fixture verification request"
+  },
+  {
+    "id": "license-request-privacy",
+    "claim": "License checks send only the license token to Sociobot",
+    "where": "privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:license-request-privacy",
+    "sandbox": "fresh /?demo=1 with ledger data; intercept a fixture verification and assert its URL, headers, and body contain no reconciliation data"
   },
   {
     "id": "workspace-clearing",
