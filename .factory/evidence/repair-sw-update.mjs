@@ -13,7 +13,7 @@ const server = createServer(async (request, response) => {
     if (!target.startsWith(root)) throw new Error('invalid path');
     if ((await stat(target).catch(() => null))?.isDirectory()) target = join(target, 'index.html');
     let body = await readFile(target);
-    if (pathname === '/sw.js' && serveUpdate) body = Buffer.from(body.toString().replaceAll('matchbox-v7', 'matchbox-v8'));
+    if (pathname === '/sw.js' && serveUpdate) body = Buffer.from(body.toString().replaceAll('matchbox-v8', 'matchbox-v9'));
     response.writeHead(200, { 'Content-Type': types[extname(target)] ?? 'application/octet-stream', 'Cache-Control': pathname === '/sw.js' ? 'no-cache' : 'public, max-age=0' });
     response.end(body);
   } catch {
@@ -36,11 +36,11 @@ await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
 serveUpdate = true;
 await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
 await page.locator('#update-toast').waitFor({ state: 'visible' });
-await page.waitForFunction(async () => (await caches.keys()).includes('matchbox-v8'));
+await page.waitForFunction(async () => (await caches.keys()).includes('matchbox-v9'));
 await page.getByRole('button', { name: 'Reload' }).click();
 await page.waitForFunction(async () => {
   const keys = await caches.keys();
-  return keys.includes('matchbox-v8') && !keys.includes('matchbox-v7');
+  return keys.includes('matchbox-v9') && !keys.includes('matchbox-v8');
 });
 const result = await page.evaluate(async () => ({
   h1: document.querySelector('h1')?.textContent?.trim(),
@@ -48,6 +48,6 @@ const result = await page.evaluate(async () => ({
   controller: navigator.serviceWorker.controller?.scriptURL,
 }));
 console.log(JSON.stringify({ ...result, errors }, null, 2));
-if (errors.length || !result.caches.includes('matchbox-v8')) process.exitCode = 1;
+if (errors.length || !result.caches.includes('matchbox-v9')) process.exitCode = 1;
 await browser.close();
 await new Promise((resolve) => server.close(resolve));

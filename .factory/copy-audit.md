@@ -36,7 +36,7 @@ Audited 29 August 2026 against the rendered empty home page, including its Plus 
 | The free matcher includes manual review, reports, backups, and offline use. | 11 | Pass |
 | Plus confirms all clear strong suggestions together and remembers repeat column mappings. | 12 | Pass |
 | Match payments to invoices from two CSVs. | 7 | Pass |
-| Built by Param Factory · v1.0.1 · repair 2. | 9 | Pass |
+| Built by Param Factory · v1.0.2 · repair 3. | 9 | Pass |
 | Still-life artwork generated for this product with the factory image model. | 11 | Pass |
 | Ready offline | 2 | Pass |
 | You are offline — matching still works | 7 | Pass |

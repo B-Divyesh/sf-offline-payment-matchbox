@@ -67,7 +67,7 @@ h1 em { color: var(--cobalt); font-weight: 400; }
 .plain-facts .icon { width: 17px; height: 17px; color: var(--lichen); }
 .demo-summary { margin: 0 0 24px; padding-block: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; border-block: 1px solid var(--hairline); }
 .demo-summary strong { font-family: Georgia, serif; font-size: 1.45rem; font-weight: 400; }
-.demo-summary a { margin-left: auto; font-weight: 750; }
+.demo-summary a { min-width: 44px; min-height: 44px; margin-left: auto; padding: 10px 2px; display: inline-flex; align-items: center; font-weight: 750; }
 .privacy-stamp { width: fit-content; display: flex; align-items: center; gap: 12px; padding: 10px 16px 10px 12px; border: 1px solid var(--hairline); border-radius: 15px 18px 14px 16px; background: rgba(255, 254, 253, .8); }
 .privacy-stamp .icon { color: var(--lichen); }
 .privacy-stamp span { display: grid; }

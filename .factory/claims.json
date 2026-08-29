@@ -63,6 +63,13 @@
     "sandbox": "fresh /demo/ sample with a locally cached valid fixture verdict; assert price; run batch confirm; assert every invoice is matched"
   },
   {
+    "id": "plus-column-mappings",
+    "claim": "Matchbox Plus remembers repeat column mappings",
+    "where": "landing, Plus dialog, README, terms",
+    "test": "npm run test:e2e -- --grep @claim:plus-column-mappings",
+    "sandbox": "fresh /demo/ sample with a locally cached valid fixture verdict; map unfamiliar invoice headings; reopen the same heading set; assert every saved selection is restored"
+  },
+  {
     "id": "manual-note",
     "claim": "Every manual match requires an audit note",
     "where": "workspace, README",
@@ -75,5 +82,26 @@
     "where": "privacy page, license dialog",
     "test": "npm run test:e2e -- --grep @claim:daily-license-check",
     "sandbox": "fresh /demo/ sample with recorded invalid verification response; restore once; reload; assert no second request"
+  },
+  {
+    "id": "workspace-clearing",
+    "claim": "Clear local workspace removes this browser's workspace data",
+    "where": "workspace, privacy page",
+    "test": "npm run test:e2e -- --grep @claim:workspace-clearing",
+    "sandbox": "fresh /demo/ sample; accept the specific clear confirmation; assert the workspace view is empty and the current record is absent from demo IndexedDB"
+  },
+  {
+    "id": "tracking-free",
+    "claim": "The product includes no advertising cookies, behavioral analytics, third-party fonts, or tracking scripts",
+    "where": "privacy page",
+    "test": "npm run test:e2e -- --grep @claim:tracking-free",
+    "sandbox": "fresh /demo/ sample; exercise confirm and export; inventory cookies, network resource types, script URLs, and font loads"
+  },
+  {
+    "id": "license-restore",
+    "claim": "Buyers may restore a valid Matchbox Plus license on another device",
+    "where": "Plus dialog, terms",
+    "test": "npm run test:e2e -- --grep @claim:license-restore",
+    "sandbox": "fresh /demo/ browser with a recorded valid verification fixture; paste a license; assert Plus is active, the token is stored, and a Plus action works"
   }
 ]

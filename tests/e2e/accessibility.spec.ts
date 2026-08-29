@@ -43,6 +43,20 @@ test('keeps every visible mobile header control at least 44px high', async ({ pa
   }
 });
 
+test('keeps every visible standalone demo control at least 44px square on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/demo/');
+  const targets = await page.locator('button:visible, a:visible, label.file-button:visible').evaluateAll((elements) => elements.map((element) => {
+    const box = element.getBoundingClientRect();
+    return { name: element.textContent?.trim() || element.getAttribute('aria-label'), width: box.width, height: box.height };
+  }));
+  expect(targets.length).toBeGreaterThan(0);
+  for (const target of targets) {
+    expect(target.width, `${target.name} width`).toBeGreaterThanOrEqual(44);
+    expect(target.height, `${target.name} height`).toBeGreaterThanOrEqual(44);
+  }
+});
+
 test('keeps the populated demo within a 390px viewport while its table remains scrollable', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/demo/');

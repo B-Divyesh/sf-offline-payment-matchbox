@@ -19,7 +19,7 @@ type PendingImport = {
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const isDemo = location.pathname === '/demo' || location.pathname === '/demo/' || new URLSearchParams(location.search).get('demo') === '1';
-const BUILD_LABEL = 'v1.0.1 · repair 2';
+const BUILD_LABEL = 'v1.0.2 · repair 3';
 
 let ledger: Ledger = emptyLedger();
 let pending: PendingImport | null = null;
@@ -342,7 +342,11 @@ app.addEventListener('click', async (event) => {
   else if (target.dataset.action === 'export-json') download(`matchbox-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(ledger, null, 2), 'application/json');
   else if (target.dataset.action === 'clear') {
     if (confirm(`Clear ${ledger.invoices.length} invoices, ${ledger.transactions.length} payments, and ${ledger.matches.length} matches from this browser? This cannot be undone.`)) {
-      await clearLedger(isDemo); ledger = emptyLedger(); pending = null; await persist(isDemo ? 'Demo ledger cleared. Reset the demo to restore its sample data.' : 'Local workspace cleared.');
+      await clearLedger(isDemo);
+      ledger = emptyLedger();
+      pending = null;
+      statusMessage = isDemo ? 'Demo ledger cleared. Reset the demo to restore its sample data.' : 'Local workspace cleared.';
+      render();
     }
   } else if (target.dataset.action === 'close-manual') (document.querySelector('#match-dialog') as HTMLDialogElement)?.close();
   else if (target.dataset.action === 'open-license') { licenseDialogOpen = true; (document.querySelector('#license-dialog') as HTMLDialogElement)?.showModal(); }
