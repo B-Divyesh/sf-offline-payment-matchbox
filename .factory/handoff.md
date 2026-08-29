@@ -68,10 +68,10 @@ verify:identity` passed for the released commit. Cold live checks also passed:
 E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:e2e
 ```
 
-The live root loaded in 876 ms and direct demo in 724 ms. Both returned 200,
-with zero console/page errors, one H1, `lang=en`, a main landmark, zero missing
-image alt attributes, and zero unlabeled buttons. The full live browser suite
-passed all 56 tests. The cold live screenshots are in
+Both live URLs returned 200, with zero console/page errors, one H1, `lang=en`,
+a main landmark, zero missing image alt attributes, and zero unlabeled buttons.
+The tracked `verify.json` files contain the exact cold-run measurements. The
+full live browser suite passed all 56 tests. The cold live screenshots are in
 `.factory/evidence/polish-5-live-home/` and
 `.factory/evidence/polish-5-live-demo/`.
 
