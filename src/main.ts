@@ -33,6 +33,15 @@ let licenseDialogOpen = false;
 
 document.title = isDemo ? 'Demo — Matchbox Ledger' : 'Matchbox Ledger — match payments to invoices';
 document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', isDemo ? 'https://offline-payment-matchbox.sociobot.in/demo/' : 'https://offline-payment-matchbox.sociobot.in/');
+if (isDemo) {
+  const setMeta = (selector: string, content: string) => document.querySelector<HTMLMetaElement>(selector)?.setAttribute('content', content);
+  setMeta('meta[name="description"]', 'Try Matchbox Ledger with a separate sample ledger for three freelancer invoices.');
+  setMeta('meta[property="og:title"]', 'Demo — Matchbox Ledger');
+  setMeta('meta[property="og:description"]', 'Try payment matching with a separate sample ledger.');
+  setMeta('meta[property="og:url"]', 'https://offline-payment-matchbox.sociobot.in/demo/');
+  setMeta('meta[name="twitter:title"]', 'Demo — Matchbox Ledger');
+  setMeta('meta[name="twitter:description"]', 'Try payment matching with a separate sample ledger.');
+}
 configureLicense(isDemo);
 
 const money = (amount: number, currency = '') => {

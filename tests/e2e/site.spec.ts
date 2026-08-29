@@ -35,6 +35,9 @@ test('provides a designed not-found page and sitemap', async ({ page, request })
 test('opens the direct demo on a visible realistic sample match at 390px', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/?demo=1');
+  await expect(page).toHaveTitle('Demo — Matchbox Ledger');
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'Demo — Matchbox Ledger');
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', 'https://offline-payment-matchbox.sociobot.in/demo/');
   await expect(page.getByText('INV-105 · Atlas Works', { exact: true })).toBeVisible();
   const preview = page.getByLabel('Sample match preview');
   await expect(preview.getByText('Transfer INV-105 Atlas', { exact: true })).toBeVisible();
