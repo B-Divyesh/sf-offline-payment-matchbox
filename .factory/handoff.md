@@ -59,8 +59,9 @@ Playwright Chromium is 145; the full browser integration scan passed.
 
 ## Production verification
 
-The work-order static deployment completed successfully. `npm run
-verify:identity` passed for the released commit. Cold live checks also passed:
+The work-order static deployment completed successfully. The deployed product
+commit is `67e4b7545224338882ba63fcb59820c5f8441904`; `npm run
+verify:identity` passed for that release. Cold live checks also passed:
 
 ```bash
 /opt/fleet/lib/verify-url.sh https://offline-payment-matchbox.sociobot.in/ .factory/evidence/polish-5-live-home

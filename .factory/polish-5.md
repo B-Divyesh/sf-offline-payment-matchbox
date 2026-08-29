@@ -71,4 +71,5 @@ verification steps recorded in the handoff.
   results as local. `E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in
   npm run test:e2e` passed all 56 tests. Live evidence is in
   `.factory/evidence/polish-5-live-home/` and
-  `.factory/evidence/polish-5-live-demo/`.
+  `.factory/evidence/polish-5-live-demo/`. The verified deployed product commit
+  is `67e4b7545224338882ba63fcb59820c5f8441904`.
