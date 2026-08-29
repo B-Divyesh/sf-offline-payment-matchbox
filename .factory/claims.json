@@ -1,0 +1,79 @@
+[
+  {
+    "id": "offline-reload",
+    "claim": "Works offline after the first visit",
+    "where": "landing facts, network status, README",
+    "test": "npm run test:e2e -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context at /demo/; wait for service worker; set context offline; reload sample ledger"
+  },
+  {
+    "id": "csv-report",
+    "claim": "Exports matched invoices, open invoices, and unused payments as CSV",
+    "where": "workspace, how it works, README",
+    "test": "npm run test:e2e -- --grep @claim:csv-report",
+    "sandbox": "fresh /demo/ sample; download report; assert header and one output row per sample record"
+  },
+  {
+    "id": "private-workflow",
+    "claim": "Parsing, matching, and report export keep reconciliation data on this device",
+    "where": "landing, workspace, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:private-workflow",
+    "sandbox": "fresh /demo/ sample; record every request through confirm and export; assert same-origin only"
+  },
+  {
+    "id": "demo-isolation",
+    "claim": "Demo changes never enter the real workspace",
+    "where": "demo banner, landing action, demo documentation",
+    "test": "npm run test:e2e -- --grep @claim:demo-isolation",
+    "sandbox": "fresh /demo/ sample; change a match; choose Start for real; assert the real workspace is empty"
+  },
+  {
+    "id": "local-persistence",
+    "claim": "The active workspace persists in browser storage",
+    "where": "privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:local-persistence",
+    "sandbox": "fresh /demo/ sample; confirm a suggestion; reload; assert the decision remains"
+  },
+  {
+    "id": "source-opt-in",
+    "claim": "Raw source CSV text is stored only after the user opts in",
+    "where": "mapping form, privacy page, README",
+    "test": "npm run test:e2e -- --grep @claim:source-opt-in",
+    "sandbox": "fresh /demo/ sample; import once without consent and once with consent; inspect downloaded backups"
+  },
+  {
+    "id": "deterministic-review",
+    "claim": "Deterministic suggestions flag competing matches and never silently merge them",
+    "where": "README, terms",
+    "test": "npm run test:e2e -- --grep @claim:deterministic-review",
+    "sandbox": "fresh /demo/ sample; replace with two equal invoices and one payment; assert both need review and no quick confirm exists"
+  },
+  {
+    "id": "json-backup",
+    "claim": "Exports and imports all local records as a JSON backup",
+    "where": "workspace, README",
+    "test": "npm run test:e2e -- --grep @claim:json-backup",
+    "sandbox": "fresh /demo/ sample; change a decision, export JSON, reset, import it, and assert every record returns"
+  },
+  {
+    "id": "plus-batch",
+    "claim": "Matchbox Plus costs $19 once and confirms all clear strong suggestions together",
+    "where": "landing, Plus dialog, README, terms",
+    "test": "npm run test:e2e -- --grep @claim:plus-batch",
+    "sandbox": "fresh /demo/ sample with a locally cached valid fixture verdict; assert price; run batch confirm; assert every invoice is matched"
+  },
+  {
+    "id": "manual-note",
+    "claim": "Every manual match requires an audit note",
+    "where": "workspace, README",
+    "test": "npm run test:e2e -- --grep @claim:manual-note",
+    "sandbox": "fresh /demo/ sample; select a manual payment; assert submission is blocked until a note is entered"
+  },
+  {
+    "id": "daily-license-check",
+    "claim": "License verification is cached for one day and its result stays visible",
+    "where": "privacy page, license dialog",
+    "test": "npm run test:e2e -- --grep @claim:daily-license-check",
+    "sandbox": "fresh /demo/ sample with recorded invalid verification response; restore once; reload; assert no second request"
+  }
+]

@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 for (const viewport of [{ name: 'desktop', width: 1440, height: 900 }, { name: 'mobile', width: 390, height: 844 }]) {
-  for (const path of ['/', '/privacy/', '/terms/']) {
+  for (const path of ['/', '/demo/', '/privacy/', '/terms/', '/404.html']) {
     test(`has no serious accessibility violations at ${path} on ${viewport.name}`, async ({ page }) => {
       await page.setViewportSize(viewport);
       await page.goto(path);
@@ -28,6 +28,28 @@ test('supports skip-link and modal keyboard operation with visible focus', async
   expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
+});
+
+test('keeps every visible mobile header control at least 44px high', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const targets = await page.locator('.site-header a:visible, .site-header button:visible').evaluateAll((elements) => elements.map((element) => {
+    const box = element.getBoundingClientRect();
+    return { name: element.textContent?.trim(), width: box.width, height: box.height };
+  }));
+  for (const target of targets) {
+    expect(target.width, `${target.name} width`).toBeGreaterThanOrEqual(44);
+    expect(target.height, `${target.name} height`).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test('keeps the populated demo within a 390px viewport while its table remains scrollable', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/demo/');
+  const widths = await page.evaluate(() => ({ viewport: document.documentElement.clientWidth, page: document.documentElement.scrollWidth }));
+  expect(widths).toEqual({ viewport: 390, page: 390 });
+  const table = await page.locator('.table-scroll').evaluate((element) => ({ client: element.clientWidth, scroll: element.scrollWidth }));
+  expect(table.scroll).toBeGreaterThan(table.client);
 });
 
 test('removes motion for users who request reduced motion', async ({ page }) => {

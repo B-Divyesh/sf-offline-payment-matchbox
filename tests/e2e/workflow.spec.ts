@@ -5,7 +5,7 @@ const payments = 'date,amount,description,currency\n2026-08-08,850.00,Payment IN
 
 test('imports both files, confirms a match, and exports a report', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Bring two CSVs');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Match payments to invoices');
 
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoices) });
   await expect(page.getByRole('heading', { name: 'invoices.csv' })).toBeVisible();
@@ -123,7 +123,7 @@ test('pre-caches the hashed welcome artwork for a fresh offline reload', async (
   await page.waitForFunction(() => navigator.serviceWorker?.controller !== null);
   await context.setOffline(true);
   await page.reload();
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('Bring two CSVs');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Match payments to invoices');
   await expect(page.locator('.hero-art img')).toHaveJSProperty('naturalWidth', 1200);
 });
 
@@ -132,4 +132,27 @@ test('makes only same-origin requests in the default private workflow', async ({
   page.on('request', (request) => origins.add(new URL(request.url()).origin));
   await page.goto('/', { waitUntil: 'networkidle' });
   expect([...origins]).toEqual(['http://127.0.0.1:4173']);
+});
+
+test('@claim:daily-license-check keeps one daily result visible and focused', async ({ page }) => {
+  let verifies = 0;
+  await page.route('https://api.sociobot.in/api/v1/products/offline-payment-matchbox/verify?**', async (route) => {
+    verifies += 1;
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'invalid', expires_at: null }) });
+  });
+  await page.goto('/demo/');
+  await page.getByRole('button', { name: 'Get Plus' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Matchbox Plus' });
+  await dialog.getByLabel('Have a license? Paste it here').fill('qa-invalid-license-regression');
+  await dialog.getByRole('button', { name: 'Restore purchase' }).click();
+
+  const notice = dialog.getByRole('status');
+  await expect(dialog).toBeVisible();
+  await expect(notice).toHaveText('This license is no longer active.');
+  await expect(notice).toBeFocused();
+  expect(verifies).toBe(1);
+
+  await page.reload();
+  await page.waitForLoadState('networkidle');
+  expect(verifies).toBe(1);
 });
