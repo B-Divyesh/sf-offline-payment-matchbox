@@ -1,45 +1,62 @@
-# Matchbox Ledger — adversarial review 1 handoff
+# Matchbox Ledger — polish round 1 handoff
 
 ## Outcome
 
-**FAIL.** Review 1 found 29 issues, including three blockers. The complete
-report is `.factory/review-1.md`.
+**PASS.** Every `F-1-1` through `F-1-29` finding in `.factory/review-1.md` is
+resolved and mapped in `.factory/polish-1.md`. The product repair is
+`75e98e9`; the portable claim-test follow-up is `1cc9475`.
 
-No product code was changed. The live site and commit
-`e12cf51bfa5ac8e55fdbd93fa3df34d2136f1f74` were reviewed on 29 August 2026.
+The static deployment completed as Azure deployment
+`cd4d3367-8039-463b-b9a0-80ebff815316`. Live asset identity was checked at
+<https://offline-payment-matchbox.sociobot.in/> (`main-C8kK6qhi.js`).
 
-## Blocking work
+## What changed
 
-1. Put real sample invoice/payment content and an action on the first demo
-   screen at 390 px and desktop.
-2. Isolate all demo storage, including license/verdict and remembered-mapping
-   localStorage; the demo currently reads and writes real keys.
-3. Repair cold hash deep links and route-change heading focus.
+- Direct `?demo=1` opens an isolated sample ledger with a realistic visible
+  payment/invoice pair, persistent banner, reset, and start-real exit.
+- Demo localStorage settings now share the `demo:` namespace with demo
+  IndexedDB; real storage is not read or written in demo mode.
+- Claims, tests, plain-language copy, shared headers, focus/deep-link routing,
+  legal headings, and 404 social metadata were completed.
+- PWA release cache advanced to `matchbox-v9` and manifest startup version 4.
 
-The report also records incomplete claim coverage, copy rewrites, inconsistent
-headers, and missing 404 social metadata.
-
-## Verification performed
+## Exact verification
 
 ```text
-15/15 claims commands from a separate clean clone PASS
-npm test                                      PASS — 20/20
-npm run typecheck                             PASS
-npm run lint                                  PASS
-npm run build                                 PASS
-npm run test:e2e                              PASS — 44/44
-live accessibility Playwright suite           PASS — 15/15
-worker verify-url.sh for / and /demo/          PASS
+Fresh clone: npm ci                              PASS
+Fresh clone: 19/19 claim commands                PASS
+npm test                                         PASS — 20/20
+npm run typecheck                                PASS
+npm run lint                                     PASS
+npm run build                                    PASS — dist/index.html created
+npm run test:e2e                                 PASS — 51/51 local
+E2E_BASE_URL=<live> npm run test:e2e             PASS — 51/51 live
+verify-url.sh home and ?demo=1                   PASS — no console errors
 ```
 
-Manual live checks covered fresh mobile/desktop first screens, demo entry,
-Reset, Start for real, seeded real-data preservation, IndexedDB contents,
-localStorage isolation, request logging, cookies/fonts/scripts, offline reload,
-route metadata, cold deep links, Back, focus, 404 behavior, and link crawling.
-Evidence is under `.factory/evidence/review-1-*`.
+The Playwright axe suite covers desktop and 390 px home, demo, privacy, terms,
+and 404 routes with no serious or critical findings. Lighthouse against the
+production build measured 100 performance, 100 accessibility, 100 best
+practices, and 100 SEO (FCP 0.9 s, LCP 1.5 s, CLS 0).
 
-## Next step
+Evidence is in `.factory/evidence/polish-1-local/` and
+`.factory/evidence/polish-1-live/`; the finding-by-finding evidence is in
+`.factory/polish-1.md`.
 
-Address every `F-1-*` item, extend the tests named in the report, deploy the
-candidate, and repeat the entire adversarial review from a clean browser rather
-than checking only the changed areas.
+## Run and deploy
+
+```bash
+npm ci
+npm test
+npm run typecheck
+npm run lint
+npm run build
+npm run test:e2e
+```
+
+Deploy static output with `/opt/fleet/lib/deploy-static.sh
+offline-payment-matchbox dist`.
+
+## Known gaps
+
+None.
