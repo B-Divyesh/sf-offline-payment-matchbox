@@ -172,7 +172,14 @@ test('@claim:private-workflow sends no ledger data to another origin', async ({ 
 });
 
 test('@claim:demo-isolation never writes sample changes into the real workspace', async ({ page }) => {
+  let realLicenseChecks = 0;
+  await page.route('https://api.sociobot.in/api/v1/products/offline-payment-matchbox/verify?license=real-license-sentinel', async (route) => {
+    realLicenseChecks += 1;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'invalid', expires_at: null }) });
+  });
   await page.goto('/');
+  await expect(page.locator('#app')).toHaveAttribute('data-workspace-ready', 'true');
   const before = await page.evaluate(async () => {
     localStorage.setItem('sb_license:offline-payment-matchbox', 'real-license-sentinel');
     localStorage.setItem('sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: 1 }));
@@ -182,9 +189,10 @@ test('@claim:demo-isolation never writes sample changes into the real workspace'
       open.onerror = () => reject(open.error);
       open.onsuccess = () => { const tx = open.result.transaction('workspace', 'readwrite'); tx.objectStore('workspace').put({ invoices: [{ id: 'REAL-1' }], transactions: [], matches: [], updatedAt: '2000-01-01T00:00:00.000Z' }, 'current'); tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); };
     });
-    return JSON.stringify({ storage: Object.keys(localStorage).filter((key) => !key.startsWith('demo:')).sort().map((key) => [key, localStorage.getItem(key)]), db: await new Promise<unknown>((resolve, reject) => { const open = indexedDB.open('matchbox-ledger', 1); open.onerror = () => reject(open.error); open.onsuccess = () => { const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }; }) });
+    return JSON.stringify({ storage: Object.keys(localStorage).filter((key) => !key.startsWith('demo:') && !key.endsWith(':verdict')).sort().map((key) => [key, localStorage.getItem(key)]), db: await new Promise<unknown>((resolve, reject) => { const open = indexedDB.open('matchbox-ledger', 1); open.onerror = () => reject(open.error); open.onsuccess = () => { const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }; }) });
   });
   await page.goto('/?demo=1');
+  await expect(page.locator('#app')).toHaveAttribute('data-workspace-ready', 'true');
   await page.evaluate(() => {
     localStorage.setItem('demo:sb_license:offline-payment-matchbox', 'demo-license');
     localStorage.setItem('demo:sb_license:offline-payment-matchbox:verdict', JSON.stringify({ valid: true, checkedAt: Date.now() }));
@@ -201,8 +209,15 @@ test('@claim:demo-isolation never writes sample changes into the real workspace'
   await waitForImport(page, 'invoices');
   await page.getByRole('button', { name: 'Start for real' }).click();
   await page.waitForURL((url) => url.pathname === '/' && !url.searchParams.has('demo'));
-  const after = await page.evaluate(async () => JSON.stringify({ storage: Object.keys(localStorage).filter((key) => !key.startsWith('demo:')).sort().map((key) => [key, localStorage.getItem(key)]), db: await new Promise<unknown>((resolve, reject) => { const open = indexedDB.open('matchbox-ledger', 1); open.onerror = () => reject(open.error); open.onsuccess = () => { const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }; }) }));
-  expect(after).toBe(before);
+  await expect(page.locator('#app')).toHaveAttribute('data-workspace-ready', 'true');
+  const after = await page.evaluate(async () => ({
+    protectedState: JSON.stringify({ storage: Object.keys(localStorage).filter((key) => !key.startsWith('demo:') && !key.endsWith(':verdict')).sort().map((key) => [key, localStorage.getItem(key)]), db: await new Promise<unknown>((resolve, reject) => { const open = indexedDB.open('matchbox-ledger', 1); open.onerror = () => reject(open.error); open.onsuccess = () => { const request = open.result.transaction('workspace', 'readonly').objectStore('workspace').get('current'); request.onsuccess = () => resolve(request.result); request.onerror = () => reject(request.error); }; }) }),
+    verdict: JSON.parse(localStorage.getItem('sb_license:offline-payment-matchbox:verdict') ?? 'null') as { valid: boolean; checkedAt: number } | null,
+  }));
+  expect(after.protectedState).toBe(before);
+  expect(realLicenseChecks).toBe(1);
+  expect(after.verdict?.valid).toBe(false);
+  expect(after.verdict?.checkedAt).toBeGreaterThan(1);
 });
 
 test('@claim:local-persistence keeps a confirmed sample match after reload', async ({ page }) => {

@@ -18,6 +18,7 @@ type PendingImport = {
 };
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+app.dataset.workspaceReady = 'false';
 const isDemo = location.pathname === '/demo' || location.pathname === '/demo/' || new URLSearchParams(location.search).get('demo') === '1';
 const mappingKey = (kind: ImportKind, headers: string[]) => scopedStorageKey(`matchbox:mapping:${kind}:${headers.join('|')}`);
 
@@ -394,6 +395,9 @@ app.addEventListener('click', async (event) => {
   else if (target.dataset.action === 'reset-demo' && isDemo) {
     ledger = sampleLedger(); pending = null; manualInvoiceId = ''; showAllOpen = false; await persist('Demo reset to its original sample data.');
   } else if (target.dataset.action === 'start-real' && isDemo) {
+    target.setAttribute('disabled', '');
+    target.setAttribute('aria-busy', 'true');
+    target.textContent = 'Opening your workspace…';
     await clearLedger(true); sessionStorage.setItem('matchbox:route-focus', '/'); window.location.assign('/');
   }
   else if (target.dataset.action === 'batch-confirm' && license.unlocked) {
@@ -476,8 +480,12 @@ async function start(): Promise<void> {
   started = true;
   render();
   focusRouteDestination();
-  void initLicense();
   void registerServiceWorker();
+  try {
+    await initLicense();
+  } finally {
+    app.dataset.workspaceReady = 'true';
+  }
 }
 
 void start();

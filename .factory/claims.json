@@ -46,7 +46,7 @@
     "claim": "Demo changes never enter the real workspace",
     "where": "demo banner, landing action, demo documentation",
     "test": "npm run test:e2e -- --grep @claim:demo-isolation",
-    "sandbox": "fresh /demo/ sample; change a match; choose Start for real; assert the real workspace is empty"
+    "sandbox": "fresh /demo/ sample; seed real sentinels; delay the expected real-license refresh; change a match; choose Start for real; await settled real initialization; require ten runs to preserve the real ledger, mapping, and license token"
   },
   {
     "id": "local-persistence",

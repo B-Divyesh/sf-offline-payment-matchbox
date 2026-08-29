@@ -7,6 +7,7 @@ export type LicenseState = { token: string; unlocked: boolean; checking: boolean
 let state: LicenseState = { token: '', unlocked: false, checking: false, notice: '' };
 const listeners = new Set<(state: LicenseState) => void>();
 let demoStorage = false;
+let storageGeneration = 0;
 
 function keyFor(key: string): string {
   return demoStorage ? `demo:${key}` : key;
@@ -15,6 +16,7 @@ function keyFor(key: string): string {
 /** Keeps every demo preference and license fixture out of the real workspace. */
 export function configureLicense(demo: boolean): void {
   demoStorage = demo;
+  storageGeneration += 1;
   state = { token: '', unlocked: false, checking: false, notice: '' };
 }
 
@@ -63,13 +65,16 @@ function readVerdict(): { valid: boolean; checkedAt: number } | null {
 
 export async function verifyLicense(token = state.token): Promise<void> {
   if (!token) return;
+  const generation = storageGeneration;
+  const verdictKey = keyFor(VERDICT_KEY);
   state = { ...state, token, checking: true, notice: '' };
   emit();
   try {
     const response = await fetch(`${BILLING_BASE}/api/v1/products/${SLUG}/verify?license=${encodeURIComponent(token)}`);
     if (!response.ok) throw new Error('Verification service unavailable');
     const result = (await response.json()) as { valid: boolean; reason?: string };
-    localStorage.setItem(keyFor(VERDICT_KEY), JSON.stringify({ valid: result.valid, checkedAt: Date.now() }));
+    localStorage.setItem(verdictKey, JSON.stringify({ valid: result.valid, checkedAt: Date.now() }));
+    if (generation !== storageGeneration) return;
     state = {
       token,
       unlocked: result.valid,
@@ -77,6 +82,7 @@ export async function verifyLicense(token = state.token): Promise<void> {
       notice: result.valid ? 'Matchbox Plus is active on this device.' : 'This license is no longer active.',
     };
   } catch {
+    if (generation !== storageGeneration) return;
     state = { ...state, checking: false, notice: 'Could not check the license while offline. Your last verified access is unchanged.' };
   }
   emit();
