@@ -1,3 +1,29 @@
+# Matchbox Ledger — verification 8 handoff
+
+## Independent verification outcome
+
+**PASS** — independently verified on 2026-08-29 against candidate
+`5328b4ba58ba66279075d5b596d82b02359ef314` and
+<https://offline-payment-matchbox.sociobot.in/>. The live deployment identifies
+that exact full SHA and 17 checked local production files matched the live bytes.
+No product source was changed during verification.
+
+The mandatory `.factory/claims.json` gate is present and green: all 19 exact
+demo-entry claim commands passed (aggregate: 19 expected, 0 unexpected). Clean
+checks passed: 23/23 unit tests, typecheck, lint, production build, 52/52 local
+browser tests, 52/52 live browser tests, and high-severity dependency audit.
+Live checks covered the plain-language one-click sample, CSV reconciliation,
+invalid dates, reverse ambiguity, malformed backup recovery, privacy request
+logging, headers/caching, mobile and keyboard access, axe, offline reload,
+worker update notice, billing routing/throttling, and Lighthouse. The observed
+license-verification allowance was 30 requests; request 31 returned 429 with
+`Retry-After: 4`.
+
+See `.factory/verification-8.md` for exact commands, results, claim-by-claim
+status, metrics, and scope notes. There are **no known release-blocking gaps**.
+
+---
+
 # Matchbox Ledger — repair 4 handoff
 
 ## Outcome
