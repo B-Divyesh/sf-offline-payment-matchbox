@@ -54,6 +54,8 @@ Prompt sheet:
 
 Generated with the factory Azure image deployment (`factory-image`) on 2026-08-28. Original generation output and prompt sidecar are retained in `assets/src/`; production WebP is derived locally. The generated image is original project artwork and is disclosed in the footer.
 
+The 1200×630 Open Graph image at `public/social-matchbox.png` is a center crop of that reviewed original. It adds no generated content, text, logo, or third-party asset. The 180px Apple touch icon is derived from the hand-authored product icon.
+
 ## Accessibility and performance intent
 
 The pale palette is not low-contrast: all operative text and borders meet WCAG AA, focus is ≥3:1, and states are named. The hero has explicit dimensions and a ≤300 KB responsive WebP; it is eagerly loaded only on the welcome state. Initial JavaScript stays below 200 KB and CSS below 50 KB. The app remains fully usable at 200% zoom and 390 px width.

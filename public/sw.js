@@ -1,6 +1,6 @@
-const VERSION = 'matchbox-v6';
-const PAGES = ['/', '/privacy/', '/terms/'];
-const SHELL = ['/offline.html', '/manifest.webmanifest', '/asset-manifest.json', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
+const VERSION = 'matchbox-v7';
+const PAGES = ['/', '/demo/', '/privacy/', '/terms/'];
+const SHELL = ['/404.html', '/offline.html', '/manifest.webmanifest', '/asset-manifest.json', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {

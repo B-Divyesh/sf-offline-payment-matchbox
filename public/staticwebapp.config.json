@@ -1,10 +1,8 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": [
-      "/assets/*",
-      "/*.{css,js,png,jpg,svg,webp,ico,woff2,json,txt,xml,wasm,webmanifest}"
-    ]
+  "responseOverrides": {
+    "404": {
+      "rewrite": "/404.html"
+    }
   },
   "globalHeaders": {
     "Content-Security-Policy": "default-src 'self'; base-uri 'self'; connect-src 'self' https://api.sociobot.in; font-src 'self'; form-action 'self'; frame-ancestors 'none'; img-src 'self' data: blob:; manifest-src 'self'; object-src 'none'; script-src 'self'; style-src 'self'; worker-src 'self'",
@@ -17,6 +15,11 @@
     ".webmanifest": "application/manifest+json"
   },
   "routes": [
+    {
+      "route": "/demo",
+      "redirect": "/demo/",
+      "statusCode": 301
+    },
     {
       "route": "/assets/*",
       "headers": {
@@ -57,6 +60,12 @@
       }
     },
     {
+      "route": "/demo/",
+      "headers": {
+        "Cache-Control": "no-cache"
+      }
+    },
+    {
       "route": "/terms/",
       "headers": {
         "Cache-Control": "no-cache"
@@ -64,6 +73,12 @@
     },
     {
       "route": "/offline.html",
+      "headers": {
+        "Cache-Control": "no-cache"
+      }
+    },
+    {
+      "route": "/404.html",
       "headers": {
         "Cache-Control": "no-cache"
       }

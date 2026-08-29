@@ -78,7 +78,7 @@ export function suggestTransactionMapping(headers: string[]): TransactionMapping
 export function parseAmount(value: string): number {
   let clean = value.trim().replace(/\s/g, '');
   const negative = /^\(.*\)$/.test(clean) || clean.endsWith('-');
-  clean = clean.replace(/[()\-]/g, '').replace(/[^0-9,.]/g, '');
+  clean = clean.replace(/[()-]/g, '').replace(/[^0-9,.]/g, '');
   if (!clean) return Number.NaN;
   const lastComma = clean.lastIndexOf(',');
   const lastDot = clean.lastIndexOf('.');

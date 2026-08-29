@@ -2,31 +2,42 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#f4f7f5" />
     <meta name="description" content="How Matchbox Ledger protects locally processed invoice and payment data." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Privacy — Matchbox Ledger" />
+    <meta property="og:description" content="How Matchbox Ledger handles local reconciliation and license data." />
+    <meta property="og:url" content="https://offline-payment-matchbox.sociobot.in/privacy/" />
+    <meta property="og:image" content="https://offline-payment-matchbox.sociobot.in/social-matchbox.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Privacy — Matchbox Ledger" />
+    <meta name="twitter:description" content="How Matchbox Ledger handles local reconciliation and license data." />
+    <meta name="twitter:image" content="https://offline-payment-matchbox.sociobot.in/social-matchbox.png" />
+    <link rel="canonical" href="https://offline-payment-matchbox.sociobot.in/privacy/" />
     <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>Privacy — Matchbox Ledger</title>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to privacy policy</a>
-    <header class="legal-header"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span>Matchbox Ledger</span></a></header>
+    <header class="site-header"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span>Matchbox Ledger</span></a><nav aria-label="Site navigation"><a href="/demo/">Demo</a><a href="/privacy/" aria-current="page">Privacy</a><a href="/terms/">Terms</a></nav></header>
     <main class="legal-main" id="main">
       <p class="updated">Effective 28 August 2026</p>
       <h1>Privacy, kept simple.</h1>
-      <p>Matchbox Ledger is designed to reconcile financial files without sending them to us. This policy explains what stays on your device and the one case where the app contacts our billing service.</p>
+      <p>Matchbox Ledger reconciles financial files without sending them to us. This policy explains local storage and license checks.</p>
       <h2>Your reconciliation data</h2>
-      <p>Invoice rows, payment rows, matches, and notes are parsed and stored in IndexedDB in your browser. They are not transmitted to Matchbox Ledger, Sociobot, a bank, or an analytics service. The optional “keep a copy” checkbox stores the selected CSV text locally; it is off by default.</p>
+      <p>Invoice rows, payment rows, matches, and notes stay in browser IndexedDB. They are not sent to Matchbox Ledger, Sociobot, a bank, or an analytics service. “Keep a copy” stores the selected CSV text locally. This option is off by default.</p>
       <h2>Backups and deletion</h2>
-      <p>When you export a backup or report, your browser creates the file locally. You choose where it is saved. “Clear local workspace” removes the workspace data from this browser. Clearing site data in your browser does the same.</p>
+      <p>Your browser creates exported backups and reports locally. You choose where each file is saved. “Clear local workspace” removes this browser’s workspace data. Clearing browser site data does the same.</p>
       <h2>License checks</h2>
-      <p>If you buy or restore Matchbox Plus, the app stores the license token in local storage and sends that token to the Sociobot billing API no more than once per day to confirm it is active. Reconciliation files and totals are never included. Sociobot/Dodo handles checkout as merchant of record under its own purchase records and legal obligations.</p>
+      <p>Buying or restoring Plus saves its license token in local storage. The app sends only that token to Sociobot for daily verification. Reconciliation files and totals are never included. Sociobot/Dodo handles checkout as merchant of record.</p>
       <h2>Network and tracking</h2>
       <p>The installed app caches its own files for offline use. We include no advertising cookies, behavioral analytics, third-party fonts, or tracking scripts.</p>
       <h2>Questions</h2>
       <p>Privacy questions can be sent to <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p>
     </main>
-    <footer class="legal-footer"><p><a href="/">Return to Matchbox Ledger</a> · <a href="/terms/">Terms</a></p></footer>
+    <footer class="legal-footer"><p>Match payments to invoices from two CSVs.</p><p><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a></p><p class="art-credit">Built by Param Factory · v1.0.1 · repair 2</p></footer>
     <script type="module" src="/src/legal.ts"></script>
   </body>
 </html>

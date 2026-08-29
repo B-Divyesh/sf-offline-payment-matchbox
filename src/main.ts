@@ -4,6 +4,7 @@ import { parseLedgerBackup } from './backup';
 import { escapeCsv, invoicesFromCsv, parseCsv, suggestInvoiceMapping, suggestTransactionMapping, transactionsFromCsv } from './csv';
 import { isCalendarDate } from './dates';
 import { clearLedger, emptyLedger, loadLedger, saveLedger } from './db';
+import { sampleLedger } from './demo';
 import { checkoutUrl, initLicense, restoreLicense, subscribeLicense, type LicenseState } from './license';
 import { suggestionsFor, summarize } from './matcher';
 import type { ImportKind, InvoiceMapping, Ledger, Match, ParsedCsv, TransactionMapping } from './types';
@@ -17,6 +18,8 @@ type PendingImport = {
 };
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
+const isDemo = location.pathname === '/demo' || location.pathname === '/demo/' || new URLSearchParams(location.search).get('demo') === '1';
+const BUILD_LABEL = 'v1.0.1 · repair 2';
 
 let ledger: Ledger = emptyLedger();
 let pending: PendingImport | null = null;
@@ -25,6 +28,10 @@ let manualInvoiceId = '';
 let statusMessage = 'Loading your local workspace…';
 let showAllOpen = false;
 let started = false;
+let licenseDialogOpen = false;
+
+document.title = isDemo ? 'Demo — Matchbox Ledger' : 'Matchbox Ledger — match payments to invoices';
+document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', isDemo ? 'https://offline-payment-matchbox.sociobot.in/demo/' : 'https://offline-payment-matchbox.sociobot.in/');
 
 const money = (amount: number, currency = '') => {
   try {
@@ -55,11 +62,12 @@ function render(): void {
   const openInvoices = ledger.invoices.filter((invoice) => !ledger.matches.some((match) => match.invoiceId === invoice.id));
   const displayInvoices = showAllOpen ? openInvoices : openInvoices.slice(0, 8);
   app.innerHTML = `
+    ${isDemo ? `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved to your workspace</strong><span><button type="button" data-action="reset-demo">Reset demo</button><button type="button" data-action="start-real">Start for real</button></span></aside>` : ''}
     <header class="site-header">
       <a class="brand" href="/" aria-label="Matchbox Ledger home"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span>Matchbox Ledger</span></a>
       <nav aria-label="Utility navigation">
+        <a href="/demo/">Demo</a>
         <a href="#workspace">Workspace</a>
-        <a href="#your-data">Your data</a>
         <button class="quiet-button" type="button" data-action="open-license">${license.unlocked ? 'Plus active' : 'Get Plus'}</button>
       </nav>
     </header>
@@ -67,11 +75,17 @@ function render(): void {
       <section class="hero ${hasFiles ? 'hero-compact' : ''}">
         <div class="hero-copy">
           <p class="eyebrow">Local payment reconciliation</p>
-          <h1>Bring two CSVs.<br><em>Leave with certainty.</em></h1>
-          <p class="lede">Match downloaded payments to open invoices without uploading financial data, connecting a bank, or changing invoicing tools.</p>
+          <h1>${isDemo ? 'Review a ready-made sample ledger' : 'Match payments to invoices from two CSVs'}</h1>
+          <p class="lede">${isDemo ? 'Explore three freelancer invoices and their downloaded payments. Demo changes stay separate from your workspace.' : 'For freelancers who reconcile invoices in spreadsheets or offline tools.'}</p>
+          ${isDemo ? `<div class="demo-summary" aria-label="Sample ledger summary"><strong>${stats.matched} matched</strong><span>${stats.open} invoices to review</span><a href="#match-title">Review suggestions</a></div>` : `<div class="hero-actions"><a class="primary-button" href="/demo/">Try it with sample data</a><span>Opens a separate ledger with three invoices.</span><a class="secondary-button" href="#workspace">Choose your invoice CSV</a></div><ul class="plain-facts"><li>${icon('check')} Works offline after the first visit</li><li>${icon('lock')} Files stay on this device</li><li>${icon('spark')} Free matcher · Plus costs $19 once</li></ul>`}
           <div class="privacy-stamp">${icon('lock')} <span><strong>Private by design</strong><small>Parsing and matching stay in this browser</small></span></div>
         </div>
         ${hasFiles ? '' : `<figure class="hero-art"><img src="${trayArtwork}" width="1200" height="800" alt="Two porcelain sorting trays connected by one cobalt matchstick" fetchpriority="high" decoding="async"><figcaption>Two lists, one deliberate match.</figcaption></figure>`}
+      </section>
+
+      <section class="how-section" aria-labelledby="how-title">
+        <div class="section-heading"><div><p class="step-label">Three steps</p><h2 id="how-title">How it works</h2></div></div>
+        <ol class="how-list"><li><strong>Import both CSVs</strong><span>Choose invoice and payment columns before anything is saved.</span></li><li><strong>Review each suggestion</strong><span>Confirm clear pairs. Add a note to every manual match.</span></li><li><strong>Export the record</strong><span>Download matched, open, and unused rows in one report.</span></li></ol>
       </section>
 
       <section class="workbench" id="workspace" aria-labelledby="workspace-title">
@@ -113,13 +127,20 @@ function render(): void {
           <div><h3>Start a clean month</h3><p>Removing a workspace clears Matchbox data from this browser. Export a backup first if you may need it.</p><button class="danger-button" type="button" data-action="clear">Clear local workspace</button></div>
         </div>
       </section>
+
+      <section class="plus-section" aria-labelledby="plus-title"><div><p class="step-label">Optional supporter tier</p><h2 id="plus-title">Matchbox Plus costs $19 once</h2><p>The free matcher includes manual review, reports, backups, and offline use. Plus confirms all clear strong suggestions together and remembers repeat column mappings.</p></div><button class="primary-button" type="button" data-action="open-license">View Matchbox Plus</button></section>
     </main>
-    <footer><p>Matchbox Ledger · No accounts, trackers, or bank connections.</p><p><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><button class="link-button" type="button" data-action="open-license">Matchbox Plus</button></p><p class="art-credit">Still-life artwork generated for this product with the factory image model.</p></footer>
+    <footer><p>Match payments to invoices from two CSVs.</p><p><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><button class="link-button" type="button" data-action="open-license">Matchbox Plus</button></p><p class="art-credit">Built by Param Factory · ${BUILD_LABEL} · Still-life artwork generated for this product with the factory image model.</p></footer>
     <div class="network-pill ${navigator.onLine ? '' : 'is-offline'}" role="status"><span></span>${navigator.onLine ? 'Ready offline' : 'You are offline — matching still works'}</div>
     <div id="live-status" class="sr-only" aria-live="polite">${html(statusMessage)}</div>
     ${manualDialog()}
     ${licenseDialog()}
     <div class="toast" id="update-toast" hidden><span>An app update is ready.</span><button type="button" data-action="reload">Reload</button></div>`;
+  if (licenseDialogOpen) {
+    const dialog = document.querySelector<HTMLDialogElement>('#license-dialog');
+    dialog?.showModal();
+    if (license.notice && !license.checking) document.querySelector<HTMLElement>('#license-notice')?.focus();
+  }
 }
 
 function importTray(kind: ImportKind, count: number, title: string, hint: string, sample: string): string {
@@ -175,13 +196,13 @@ function manualDialog(): string {
 }
 
 function licenseDialog(): string {
-  return `<dialog id="license-dialog" aria-labelledby="license-title"><div class="dialog-shell license-shell"><div class="dialog-head"><div><p class="step-label">One-time supporter unlock</p><h2 id="license-title">Matchbox Plus</h2></div><button class="icon-button" type="button" data-action="close-license" aria-label="Close dialog">×</button></div><p class="price"><strong>$19</strong> once · no subscription</p><p>The complete matcher, manual review, reports, backups, and offline use are free. Plus adds one-click confirmation of every unambiguous strong suggestion and remembers your column mappings for next month.</p>${license.unlocked ? `<div class="license-active">${icon('check')}<div><strong>Plus is active</strong><small>${html(license.notice || 'License saved on this device.')}</small></div></div>` : `<a class="primary-button full-button" href="${checkoutUrl()}">Buy Matchbox Plus</a><p class="legal-note">Checkout is hosted by Sociobot. Sociobot/Dodo is the merchant of record and handles refunds; a refund revokes the license.</p><form id="restore-form"><label>Have a license? Paste it here<input name="license" autocomplete="off" spellcheck="false" required></label><button class="secondary-button" type="submit">Restore purchase</button></form>${license.notice ? `<p class="notice">${html(license.notice)}</p>` : ''}`}<p class="legal-note"><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p></div></dialog>`;
+  return `<dialog id="license-dialog" aria-labelledby="license-title"><div class="dialog-shell license-shell"><div class="dialog-head"><div><p class="step-label">One-time supporter unlock</p><h2 id="license-title">Matchbox Plus</h2></div><button class="icon-button" type="button" data-action="close-license" aria-label="Close dialog">×</button></div><p class="price"><strong>$19</strong> once · no subscription</p><p>The complete matcher, manual review, reports, backups, and offline use are free. Plus confirms clear strong suggestions together. It also remembers column mappings.</p>${license.unlocked ? `<div class="license-active" id="license-notice" role="status" tabindex="-1">${icon('check')}<div><strong>Plus is active</strong><small>${html(license.notice || 'License saved on this device.')}</small></div></div>` : `<a class="primary-button full-button" href="${checkoutUrl()}">Buy Matchbox Plus</a><p class="legal-note">Checkout is hosted by Sociobot. Sociobot/Dodo is the merchant of record and handles refunds. A refund revokes the license.</p><form id="restore-form" aria-busy="${license.checking}"><label>Have a license? Paste it here<input name="license" autocomplete="off" spellcheck="false" required></label><button class="secondary-button" type="submit" ${license.checking ? 'disabled' : ''}>${license.checking ? 'Checking license…' : 'Restore purchase'}</button></form>${license.notice ? `<p class="notice" id="license-notice" role="status" aria-live="polite" tabindex="-1">${html(license.notice)}</p>` : ''}`}<p class="legal-note"><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></p></div></dialog>`;
 }
 
 async function persist(message: string): Promise<void> {
   statusMessage = message;
   render();
-  await saveLedger(ledger);
+  await saveLedger(ledger, isDemo);
 }
 
 function addMatch(invoiceId: string, transactionId: string, method: Match['method'], note = ''): void {
@@ -294,6 +315,16 @@ app.addEventListener('submit', async (event) => {
 app.addEventListener('click', async (event) => {
   const target = (event.target as HTMLElement).closest<HTMLElement>('button, a');
   if (!target) return;
+  if (isDemo && target instanceof HTMLAnchorElement) {
+    const destination = new URL(target.href, location.href);
+    const staysInDemo = (destination.pathname === '/demo' || destination.pathname === '/demo/') || (destination.pathname === location.pathname && destination.hash);
+    if (!staysInDemo) {
+      event.preventDefault();
+      await clearLedger(true);
+      location.assign(destination.href);
+      return;
+    }
+  }
   if (target.dataset.confirm && target.dataset.transaction) {
     addMatch(target.dataset.confirm, target.dataset.transaction, 'suggested');
     await persist(`Match confirmed for ${target.dataset.confirm}.`);
@@ -311,11 +342,16 @@ app.addEventListener('click', async (event) => {
   else if (target.dataset.action === 'export-json') download(`matchbox-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(ledger, null, 2), 'application/json');
   else if (target.dataset.action === 'clear') {
     if (confirm(`Clear ${ledger.invoices.length} invoices, ${ledger.transactions.length} payments, and ${ledger.matches.length} matches from this browser? This cannot be undone.`)) {
-      await clearLedger(); ledger = emptyLedger(); pending = null; await persist('Local workspace cleared.');
+      await clearLedger(isDemo); ledger = emptyLedger(); pending = null; await persist(isDemo ? 'Demo ledger cleared. Reset the demo to restore its sample data.' : 'Local workspace cleared.');
     }
   } else if (target.dataset.action === 'close-manual') (document.querySelector('#match-dialog') as HTMLDialogElement)?.close();
-  else if (target.dataset.action === 'open-license') (document.querySelector('#license-dialog') as HTMLDialogElement)?.showModal();
-  else if (target.dataset.action === 'close-license') (document.querySelector('#license-dialog') as HTMLDialogElement)?.close();
+  else if (target.dataset.action === 'open-license') { licenseDialogOpen = true; (document.querySelector('#license-dialog') as HTMLDialogElement)?.showModal(); }
+  else if (target.dataset.action === 'close-license') { licenseDialogOpen = false; (document.querySelector('#license-dialog') as HTMLDialogElement)?.close(); }
+  else if (target.dataset.action === 'reset-demo' && isDemo) {
+    ledger = sampleLedger(); pending = null; manualInvoiceId = ''; showAllOpen = false; await persist('Demo reset to its original sample data.');
+  } else if (target.dataset.action === 'start-real' && isDemo) {
+    await clearLedger(true); window.location.assign('/');
+  }
   else if (target.dataset.action === 'batch-confirm' && license.unlocked) {
     const open = ledger.invoices.filter((invoice) => !ledger.matches.some((match) => match.invoiceId === invoice.id));
     let count = 0;
@@ -329,6 +365,10 @@ app.addEventListener('click', async (event) => {
 
 window.addEventListener('online', render);
 window.addEventListener('offline', render);
+
+app.addEventListener('close', (event) => {
+  if ((event.target as HTMLElement).id === 'license-dialog') licenseDialogOpen = false;
+}, true);
 
 subscribeLicense((next) => {
   const changed = next.unlocked !== license.unlocked || next.notice !== license.notice || next.checking !== license.checking;
@@ -351,7 +391,14 @@ async function registerServiceWorker(): Promise<void> {
 }
 
 async function start(): Promise<void> {
-  try { ledger = await loadLedger(); statusMessage = 'Local workspace ready.'; }
+  try {
+    ledger = await loadLedger(isDemo);
+    if (isDemo && ledger.invoices.length === 0 && ledger.transactions.length === 0) {
+      ledger = sampleLedger();
+      await saveLedger(ledger, true);
+    }
+    statusMessage = isDemo ? 'Demo sample ready.' : 'Local workspace ready.';
+  }
   catch { ledger = emptyLedger(); statusMessage = 'Local storage is unavailable. You can work, but refresh will clear this session.'; }
   started = true;
   render();
