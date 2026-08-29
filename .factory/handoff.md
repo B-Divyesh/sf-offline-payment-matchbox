@@ -36,7 +36,7 @@ Hard-coded page versions were removed.
   candidate. The response-policy and update tests cover both rules.
 - `scripts/verify-live-identity.mjs` provides the repeatable post-deploy gate.
   README deployment instructions document it.
-- The service-worker cache moved from `matchbox-v9` to `matchbox-v10`, ensuring
+- The service-worker cache moved from `matchbox-v9` to `matchbox-v11`, ensuring
   installed clients receive this repair through the existing update prompt.
 - A final live rerun exposed a 50 ms hash-focus race: rapid keyboard movement
   after activating the skip link could be pulled back to the route heading.
