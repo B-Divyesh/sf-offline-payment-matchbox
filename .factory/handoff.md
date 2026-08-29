@@ -1,65 +1,57 @@
-# Matchbox Ledger — polish round 1 handoff
+# Matchbox Ledger — verification 7 handoff
 
 ## Outcome
 
-**PASS.** Every `F-1-1` through `F-1-29` finding in `.factory/review-1.md` is
-resolved and mapped in `.factory/polish-1.md`. The product repair is
-`75e98e9`; the portable claim-test follow-up is `1cc9475`; direct-demo metadata
-was finalised in `0f949f9`.
+**FAIL.** The requested candidate
+`20fe840e99f5384136ea626c20aa1b5770ecde94` cannot be resolved locally or from
+the named GitHub remote. GitHub returns HTTP 422 (“No commit found for SHA”),
+and an exact fetch returns `upload-pack: not our ref`. Production therefore
+cannot be proven to match that candidate.
 
-The static deployments completed as Azure deployments
-`cd4d3367-8039-463b-b9a0-80ebff815316` and
-`03791d24-286c-4f91-84e8-758a4998eb67`. Live asset identity was checked at
-<https://offline-payment-matchbox.sociobot.in/> (`main-BOj3Bl98.js`).
+The only available remote tip is
+`20fe84da49e6c0a3402ba0c64bd7dd26e92ade84`. Its production build is
+functionally healthy and all 14 compared live artifacts match it byte-for-byte.
+This positive fallback evidence does not remove the candidate-identity blocker.
 
-## What changed
+Full evidence and defect severity are in `.factory/verification-7.md`.
 
-- Direct `?demo=1` opens an isolated sample ledger with a realistic visible
-  payment/invoice pair, persistent banner, reset, and start-real exit.
-- Demo localStorage settings now share the `demo:` namespace with demo
-  IndexedDB; real storage is not read or written in demo mode.
-- Claims, tests, plain-language copy, shared headers, focus/deep-link routing,
-  legal headings, and 404 social metadata were completed.
-- PWA release cache advanced to `matchbox-v9` and manifest startup version 4.
-
-## Exact verification
+## Verification summary
 
 ```text
-Fresh clone: npm ci                              PASS
-Fresh clone: 19/19 claim commands                PASS
-npm test                                         PASS — 20/20
-npm run typecheck                                PASS
-npm run lint                                     PASS
-npm run build                                    PASS — dist/index.html created
-npm run test:e2e                                 PASS — 51/51 local
-E2E_BASE_URL=<live> npm run test:e2e             PASS — 51/51 live
-Final live metadata/deep-link subset              PASS — 6/6
-verify-url.sh home and ?demo=1                   PASS — no console errors
+npm ci                                               PASS — 0 vulnerabilities
+19/19 exact claims.json commands                     PASS
+npm test                                             PASS — 20/20
+npm run typecheck                                    PASS
+npm run lint                                         PASS
+npm run build                                        PASS
+node --check dist/sw.js                              PASS
+npm run test:e2e                                     PASS — 51/51 local
+E2E_BASE_URL=<live> npm run test:e2e                 PASS — 51/51 live
+verify-url.sh root and demo                          PASS
+Live artifact identity vs available remote tip      PASS — 14/14
+Live artifact identity vs requested candidate       FAIL — candidate absent
 ```
 
-The Playwright axe suite covers desktop and 390 px home, demo, privacy, terms,
-and 404 routes with no serious or critical findings. Lighthouse against the
-production build measured 100 performance, 100 accessibility, 100 best
-practices, and 100 SEO (FCP 0.9 s, LCP 1.5 s, CLS 0).
+Cold first-read passed: the first screen says what the product does, names
+freelancers using spreadsheets/offline tools, and exposes one-click **Try it
+with sample data** with the result explained beside it.
 
-Evidence is in `.factory/evidence/polish-1-local/` and
-`.factory/evidence/polish-1-live/`; the finding-by-finding evidence is in
-`.factory/polish-1.md`.
+Independent live checks covered normal matching/export, required manual notes,
+leap-day and European amount input, invalid dates, malformed quotes, oversized
+files, recovery, ambiguity, persistence, privacy traffic, cookies, desktop,
+390 px mobile, keyboard, focus, reduced motion, axe, offline reload, and service
+worker updates. Lighthouse scored 97/100/100/100. The external license API
+allowed 30 rapid requests, then returned 429 with `Retry-After: 4` on request 31.
 
-## Run and deploy
+## Defects
 
-```bash
-npm ci
-npm test
-npm run typecheck
-npm run lint
-npm run build
-npm run test:e2e
-```
+- **Release-blocking:** requested candidate commit is unavailable, so live
+  deployment identity against it cannot be established.
+- **Minor:** `package.json` says `1.0.2`; the visible footer says
+  `v1.0.3 · polish 1`.
 
-Deploy static output with `/opt/fleet/lib/deploy-static.sh
-offline-payment-matchbox dist`.
+## Next step
 
-## Known gaps
-
-None.
+Provide and push the exact candidate object, or issue a corrected work order for
+the actual commit intended for release. Then rerun identity verification. No
+product-code repair is indicated by the available build's QA results.

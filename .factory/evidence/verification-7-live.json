@@ -1,0 +1,51 @@
+{
+  "workflow": {
+    "initial": {
+      "heading": "Review the sample payment matches",
+      "banner": true,
+      "reset": true,
+      "startReal": true,
+      "samplePair": true
+    },
+    "shortNoteBlocked": true,
+    "manualSaved": true,
+    "reportName": "matchbox-report-2026-08-29.csv",
+    "reportRows": 5,
+    "reportHasNote": true,
+    "persisted": true,
+    "online": {
+      "controller": "https://offline-payment-matchbox.sociobot.in/sw.js",
+      "caches": [
+        "matchbox-v9"
+      ]
+    },
+    "offline": {
+      "notice": true,
+      "persisted": true
+    },
+    "origins": [
+      "https://offline-payment-matchbox.sociobot.in"
+    ],
+    "cookies": [],
+    "errors": []
+  },
+  "boundaries": {
+    "boundaryImported": true,
+    "recovered": true,
+    "alerts": [
+      "Payment row 2 needs a valid date and amount.",
+      "A quoted field is not closed. Check the last few rows and try again.",
+      "That file is over 5 MB. Export a smaller month or split it before importing."
+    ],
+    "errors": []
+  },
+  "mobile": {
+    "dimensions": {
+      "viewport": 390,
+      "page": 390
+    },
+    "targetFailures": [],
+    "transition": "1e-05s",
+    "errors": []
+  }
+}
