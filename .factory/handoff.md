@@ -2,10 +2,12 @@
 
 ## Outcome
 
-**Release-ready locally.** This repair addresses every release blocker in
+**Released.** This repair addresses every release blocker in
 independent verifier report `eb73e993c6399308f5e1ef899041d3d01c5623f3` for
 candidate `33f16759fcafa0fbae9eadb9687d43cd3f24ee2d`. The artifact remains a
 Vite + TypeScript local-first PWA with static output in `dist/`.
+
+Repair source commit: `fd78f4920bd8c2b65b5a80b4f79cd7d6c0108a2d`
 
 Product URL: <https://offline-payment-matchbox.sociobot.in/>
 
@@ -118,6 +120,11 @@ Production asset sizes remain inside the contract: app JavaScript 35,909 bytes
 raw / 12.13 KiB gzip, app CSS 18,038 bytes raw / 4.84 KiB gzip, hero WebP
 43,436 bytes, and no remote font bytes.
 
+The deployed site was measured separately in
+`.factory/evidence/repair-3-live-lighthouse.json`: Performance 100,
+Accessibility 100, Best Practices 100, SEO 100, FCP 0.9 s, LCP 1.2 s, TBT
+0 ms, CLS 0, and 79 KiB total transfer.
+
 ### Response policy
 
 Unit and browser coverage verifies restrictive CSP and permissions headers,
@@ -127,16 +134,46 @@ designed 404 response configuration.
 
 ## Deployment and live identity
 
-The repair is ready for the work order's static deployment command:
+The verified `dist/` was deployed with:
 
 ```bash
 /opt/fleet/lib/deploy-static.sh offline-payment-matchbox dist
 ```
 
-Live response-policy, browser, claims, and byte-identity results will be added
-after deployment.
+Azure deployment `6f92bcc7-e4ce-41a6-8d40-960250839008` succeeded to the
+existing `sf-offline-payment-matchbox` Static Web App in Central US. Its default
+host is `happy-grass-0c0e7a510.7.azurestaticapps.net`; the configured custom
+domain returned HTTPS 200 after deployment.
+
+Post-deploy evidence:
+
+- `E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:e2e`
+  passed 44/44 tests.
+- Worker `verify-url.sh` passed both `/` and `/demo/` with HTTPS 200, correct
+  route title, `lang=en`, one H1, a main landmark, no missing alt text, no
+  unlabeled buttons, and no console errors. Evidence is under
+  `.factory/evidence/repair-3-live-home/` and `repair-3-live-demo/`.
+- `.factory/evidence/repair-3-live-identity.mjs` matched local and live SHA-256
+  bytes for all 14 checked artifacts: four route documents, 404, sitemap,
+  manifest, asset manifest, worker, social image, both CSS files, app
+  JavaScript, and hero WebP.
+- Representative exact hashes: `/`
+  `b0c578ba27707f466413c1f051453142cf067ce3fb284b06ce5eba5e8eb2f432`,
+  `/demo/`
+  `cc9856ff09fd0ae0f6e7f0b163cbbe50105fc8929387a846f81a85160e8905b2`,
+  app JavaScript
+  `7f3a6a8063788095923eadcd0263974ddf7c0d7296fd8caf9f286069231516b4`,
+  and `/sw.js`
+  `f8dcd8d88585d032a02b3ac539b8d7007869d43d8bc1b959fc4803ba849287a9`.
+- Live headers include the expected CSP with `frame-ancestors 'none'`,
+  Permissions-Policy, Referrer-Policy, `nosniff`, and `X-Frame-Options: DENY`.
+  HTML is `no-cache`; hashed assets are immutable for one year.
+- A nonexistent route returned HTTP 404 with the exact designed 404 body.
+- The Sociobot checkout endpoint returned 303 to hosted checkout. A live fake
+  license check returned HTTP 200 with `valid:false` and `reason:invalid`.
 
 ## Known gaps and next steps
 
-No release-blocking product gap remains locally. The only remaining step is the
-authorized static deployment and post-deploy live identity verification.
+No release-blocking gap is known. Library/CLI consumers, an owned backend,
+server persistence, health/build endpoints, and sign-in are not applicable to
+this static local-first PWA.

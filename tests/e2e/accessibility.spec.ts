@@ -21,13 +21,15 @@ test('supports skip-link and modal keyboard operation with visible focus', async
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/#main$/);
 
-  await page.getByRole('button', { name: 'Get Plus' }).focus();
+  const plusTrigger = page.getByRole('button', { name: 'Get Plus' });
+  await plusTrigger.focus();
   await page.keyboard.press('Enter');
   const dialog = page.getByRole('dialog', { name: 'Matchbox Plus' });
   await expect(dialog).toBeVisible();
   expect(await dialog.evaluate((element) => element.contains(document.activeElement))).toBe(true);
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
+  await expect(plusTrigger).toBeFocused();
 });
 
 test('keeps every visible mobile header control at least 44px high', async ({ page }) => {
