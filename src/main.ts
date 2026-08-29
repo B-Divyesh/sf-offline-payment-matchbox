@@ -396,7 +396,10 @@ window.addEventListener('online', render);
 window.addEventListener('offline', render);
 
 function focusRouteDestination(): void {
+  const focusedBeforeDelay = document.activeElement;
   window.setTimeout(() => {
+    const activeElement = document.activeElement;
+    if (activeElement !== focusedBeforeDelay && activeElement !== document.body) return;
     const id = decodeURIComponent(location.hash.slice(1));
     const routeKey = `${location.pathname}${location.search}`;
     const historyTraversal = performance.getEntriesByType('navigation').some((entry) => (entry as PerformanceNavigationTiming).type === 'back_forward');

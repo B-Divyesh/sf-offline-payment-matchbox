@@ -38,6 +38,10 @@ Hard-coded page versions were removed.
   README deployment instructions document it.
 - The service-worker cache moved from `matchbox-v9` to `matchbox-v10`, ensuring
   installed clients receive this repair through the existing update prompt.
+- A final live rerun exposed a 50 ms hash-focus race: rapid keyboard movement
+  after activating the skip link could be pulled back to the route heading.
+  Route focus now yields to any newer user focus, and the keyboard regression
+  waits through the former race window before activating the Plus dialog.
 
 ## Verification evidence
 
@@ -68,8 +72,9 @@ Browser and accessibility evidence:
 - Playwright axe scanned `/`, `/demo/`, `/privacy/`, `/terms/`, and `/404.html`
   at 1440 × 900 and 390 × 844. There were zero serious or critical findings.
 - Keyboard tests passed the skip link, Enter activation, modal focus entry,
-  Escape close, and focus return. Every measured mobile header, footer, and
-  standalone demo target was at least 44 × 44 CSS px.
+  rapid post-navigation focus movement, Escape close, and focus return. Every
+  measured mobile header, footer, and standalone demo target was at least
+  44 × 44 CSS px. The two route/focus tests also passed 20/20 repeated runs.
 - The 390 px document had no horizontal overflow; the ledger table retained
   intentional internal scrolling. Reduced-motion transition duration was at
   most 0.00001 seconds.
@@ -116,7 +121,7 @@ Live Lighthouse      100 performance / 100 accessibility / 100 best practices / 
 Live FCP / LCP        0.9 s / 1.2 s
 Live TBT / CLS        0 ms / 0
 Live transfer         80 KiB
-App JavaScript        38.37 KB raw / 12.75 KB gzip
+App JavaScript        38.47 KB raw / 12.78 KB gzip
 App CSS               19.03 KB raw / 5.05 KB gzip
 Hero artwork          43.43 KB
 ```
