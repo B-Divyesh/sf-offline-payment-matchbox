@@ -1,4 +1,4 @@
-const VERSION = 'matchbox-v14';
+const VERSION = 'matchbox-v15';
 const PAGES = ['/', '/demo/', '/privacy/', '/terms/'];
 const SHELL = ['/404.html', '/offline.html', '/manifest.webmanifest', '/asset-manifest.json', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 

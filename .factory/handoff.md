@@ -17,7 +17,7 @@ existing ceramic-tray identity and original artwork.
 - `matching-signals` proves the exact visible evidence line for amount,
   currency, invoice reference, customer reference, and the 45-day date rule.
   Its demo-only fixtures also prove the 46-day fallback line.
-- The service-worker cache version is `matchbox-v14`, so installed clients can
+- The service-worker cache version is `matchbox-v15`, so installed clients can
   receive the repaired shell. The catalog description is verb-first and 65
   characters long.
 

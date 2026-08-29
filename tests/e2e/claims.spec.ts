@@ -191,7 +191,9 @@ test('@claim:demo-isolation never writes sample changes into the real workspace'
   });
   await page.reload();
   await page.getByRole('button', { name: 'Confirm match' }).first().click();
+  await expect(page.locator('#live-status')).toHaveText('Match confirmed for INV-105.');
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'custom.csv', mimeType: 'text/csv', buffer: Buffer.from('record,total,client,issued\nDEMO-1,125,Demo Client,2026-08-24') });
+  await expect(page.locator('#mapping-form')).toBeVisible();
   await page.locator('#mapping-form select[name="id"]').selectOption('record');
   await page.locator('#mapping-form select[name="date"]').selectOption('issued');
   page.once('dialog', (dialog) => void dialog.accept());
@@ -239,6 +241,7 @@ test('@claim:mapping-before-save keeps imported rows out of IndexedDB until each
   const invoiceCsv = 'record,total,client,issued\nMAPPED-1,275.00,Juniper Press,2026-08-25';
   const paymentCsv = 'paid_on,value,memo,money\n2026-08-27,275.00,Transfer MAPPED-1 Juniper,USD';
   await page.goto('/demo/');
+  await expect(page.getByText('3 rows loaded locally').first()).toBeVisible();
 
   const initial = await storedDemoWorkspace(page);
   await page.locator('input[data-file-kind="invoice"]').setInputFiles({ name: 'mapped-invoices.csv', mimeType: 'text/csv', buffer: Buffer.from(invoiceCsv) });
