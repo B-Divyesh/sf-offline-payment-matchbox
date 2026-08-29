@@ -4,11 +4,13 @@
 
 **PASS.** Every `F-1-1` through `F-1-29` finding in `.factory/review-1.md` is
 resolved and mapped in `.factory/polish-1.md`. The product repair is
-`75e98e9`; the portable claim-test follow-up is `1cc9475`.
+`75e98e9`; the portable claim-test follow-up is `1cc9475`; direct-demo metadata
+was finalised in `0f949f9`.
 
-The static deployment completed as Azure deployment
-`cd4d3367-8039-463b-b9a0-80ebff815316`. Live asset identity was checked at
-<https://offline-payment-matchbox.sociobot.in/> (`main-C8kK6qhi.js`).
+The static deployments completed as Azure deployments
+`cd4d3367-8039-463b-b9a0-80ebff815316` and
+`03791d24-286c-4f91-84e8-758a4998eb67`. Live asset identity was checked at
+<https://offline-payment-matchbox.sociobot.in/> (`main-BOj3Bl98.js`).
 
 ## What changed
 
@@ -31,6 +33,7 @@ npm run lint                                     PASS
 npm run build                                    PASS — dist/index.html created
 npm run test:e2e                                 PASS — 51/51 local
 E2E_BASE_URL=<live> npm run test:e2e             PASS — 51/51 live
+Final live metadata/deep-link subset              PASS — 6/6
 verify-url.sh home and ?demo=1                   PASS — no console errors
 ```
 

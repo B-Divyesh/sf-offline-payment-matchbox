@@ -1,7 +1,7 @@
 # Polish round 1 — review finding resolution
 
 Reviewed base: `62d33e05f031adf904f94ae285bae4f3e08671b4`  
-Repair source: `75e98e9` and `1cc9475`  
+Repair source: `75e98e9`, `1cc9475`, and `0f949f9`  
 Live: <https://offline-payment-matchbox.sociobot.in/?demo=1>
 
 | Finding | Change made | Evidence |
@@ -40,6 +40,6 @@ Live: <https://offline-payment-matchbox.sociobot.in/?demo=1>
 
 - Fresh-clone claim sweep: all **19/19** commands in `.factory/claims.json` passed after `npm ci`.
 - Local: `npm test` (20/20), `npm run typecheck`, `npm run lint`, `npm run build`, and `npm run test:e2e` (51/51) passed.
-- Live: `E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:e2e` passed **51/51**.
+- Live: `E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:e2e` passed **51/51** before the final metadata-only commit; the final live metadata/deep-link suite passed **6/6** after deployment `03791d24-286c-4f91-84e8-758a4998eb67`.
 - `verify-url.sh` passed home and `?demo=1` with zero console/page errors, one H1, `<main>`, `lang=en`, and no missing image alt text. Live screenshots: `.factory/evidence/polish-1-live/home/screenshot-desktop.png` and `.factory/evidence/polish-1-live/demo/screenshot-mobile.png`.
 - Lighthouse local production build: Performance 100, Accessibility 100, Best Practices 100, SEO 100; FCP 0.9 s, LCP 1.5 s, CLS 0. Report: `.factory/evidence/polish-1-local/lighthouse.json`.
