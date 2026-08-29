@@ -1,8 +1,11 @@
 # Independent verification 10 — FAIL
 
-**Verified:** 2026-08-29  
-**Candidate:** `1b7eb438a59618924011dbe8cefc9a7bd011affd`  
-**Live URL:** <https://offline-payment-matchbox.sociobot.in/>  
+**Verified:** 2026-08-29
+
+**Candidate:** `1b7eb438a59618924011dbe8cefc9a7bd011affd`
+
+**Live URL:** <https://offline-payment-matchbox.sociobot.in/>
+
 **Decision:** **FAIL**
 
 The deployed files are byte-for-byte the candidate, and the product itself is
