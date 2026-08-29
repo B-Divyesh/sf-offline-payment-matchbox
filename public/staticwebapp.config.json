@@ -43,6 +43,13 @@
       }
     },
     {
+      "route": "/release.json",
+      "headers": {
+        "Cache-Control": "no-cache",
+        "Content-Type": "application/json; charset=utf-8"
+      }
+    },
+    {
       "route": "/",
       "headers": {
         "Cache-Control": "no-cache"

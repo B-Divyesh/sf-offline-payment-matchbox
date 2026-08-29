@@ -19,7 +19,6 @@ type PendingImport = {
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const isDemo = location.pathname === '/demo' || location.pathname === '/demo/' || new URLSearchParams(location.search).get('demo') === '1';
-const BUILD_LABEL = 'v1.0.3 · polish 1';
 const mappingKey = (kind: ImportKind, headers: string[]) => scopedStorageKey(`matchbox:mapping:${kind}:${headers.join('|')}`);
 
 let ledger: Ledger = emptyLedger();
@@ -141,7 +140,7 @@ function render(): void {
 
       <section class="plus-section" aria-labelledby="plus-title"><div><p class="step-label">Paid features</p><h2 id="plus-title">Matchbox Plus costs $19 once</h2><p>The free matcher includes manual review, reports, backups, and offline use. Plus confirms all clear strong suggestions together and remembers repeat column mappings.</p></div><button class="primary-button" type="button" data-action="open-license">View Plus features</button></section>
     </main>
-    <footer><p>Match payments to invoices from two CSVs.</p><p><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><button class="link-button" type="button" data-action="open-license">View Plus features</button></p><p class="art-credit">Built by Param Factory · ${BUILD_LABEL} · Still-life artwork generated for this product with the factory image model.</p></footer>
+    <footer><p>Match payments to invoices from two CSVs.</p><p><a href="/privacy/">Privacy</a><a href="/terms/">Terms</a><button class="link-button" type="button" data-action="open-license">View Plus features</button></p><p class="art-credit">Built by Param Factory · ${__RELEASE_LABEL__} · Still-life artwork generated for this product with the factory image model.</p></footer>
     <div class="network-pill ${navigator.onLine ? '' : 'is-offline'}" role="status"><span></span>${navigator.onLine ? 'Ready offline' : 'You are offline — matching still works'}</div>
     <div id="live-status" class="sr-only" aria-live="polite">${html(statusMessage)}</div>
     ${manualDialog()}

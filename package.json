@@ -1,16 +1,17 @@
 {
   "name": "offline-payment-matchbox",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "lint": "oxlint src tests vite.config.ts playwright.config.ts vitest.config.ts",
+    "lint": "oxlint src tests scripts release-metadata.ts vite.config.ts playwright.config.ts vitest.config.ts",
     "preview": "vite preview --host 0.0.0.0",
     "test": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "verify:identity": "node scripts/verify-live-identity.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

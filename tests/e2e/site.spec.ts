@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+const packageMetadata = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')) as { name: string; version: string };
 
 const routes = [
   { path: '/', title: 'Matchbox Ledger — match payments to invoices', canonical: 'https://offline-payment-matchbox.sociobot.in/' },
@@ -19,6 +22,23 @@ for (const route of routes) {
     await expect(page.getByText(/Built by Param Factory/)).toBeVisible();
   });
 }
+
+test('publishes one package-derived version and exact build identity on every page', async ({ page, request }) => {
+  const response = await request.get('/release.json');
+  expect(response.ok()).toBe(true);
+  const release = await response.json() as { product: string; version: string; commit: string };
+  expect(release).toEqual({
+    product: packageMetadata.name,
+    version: packageMetadata.version,
+    commit: expect.stringMatching(/^[0-9a-f]{40}$/),
+  });
+  const label = `v${release.version} · build ${release.commit.slice(0, 7)}`;
+
+  for (const path of ['/', '/demo/', '/privacy/', '/terms/', '/404.html']) {
+    await page.goto(path);
+    await expect(page.locator('footer')).toContainText(label);
+  }
+});
 
 test('provides a designed not-found page and sitemap', async ({ page, request }) => {
   await page.goto('/404.html');

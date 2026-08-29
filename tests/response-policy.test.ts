@@ -26,6 +26,8 @@ describe('static deployment response policy', () => {
     expect(route('/demo/')['Cache-Control']).toBe('no-cache');
     expect(route('/sw.js')['Cache-Control']).toBe('no-cache');
     expect(route('/asset-manifest.json')['Cache-Control']).toBe('no-cache');
+    expect(route('/release.json')['Cache-Control']).toBe('no-cache');
+    expect(route('/release.json')['Content-Type']).toContain('application/json');
     expect(route('/manifest.webmanifest')['Content-Type']).toContain('application/manifest+json');
     expect(config.mimeTypes['.webmanifest']).toBe('application/manifest+json');
   });

@@ -1,4 +1,4 @@
-const VERSION = 'matchbox-v9';
+const VERSION = 'matchbox-v10';
 const PAGES = ['/', '/demo/', '/privacy/', '/terms/'];
 const SHELL = ['/404.html', '/offline.html', '/manifest.webmanifest', '/asset-manifest.json', '/icons/icon.svg', '/icons/icon-192.png', '/icons/icon-512.png', '/icons/apple-touch-icon.png'];
 
@@ -37,6 +37,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname === '/release.json') {
+    event.respondWith(fetch(new Request(event.request, { cache: 'no-store' })));
+    return;
+  }
   if (event.request.mode === 'navigate') {
     event.respondWith(fetch(event.request).then((response) => {
       const copy = response.clone();

@@ -44,6 +44,8 @@ Playwright is pinned to 1.58.2. Its Chromium browser must be available through `
 
 The exact production command is `npm run build`. It creates the static site in `./dist`, with `dist/index.html` at its root and standalone `/privacy/` and `/terms/` pages. Serve the directory over HTTPS so service workers and installation work outside localhost.
 
+Each build writes its package version and full Git commit to `/release.json`. After deployment, run `npm run verify:identity` to prove the live files identify the checked-out commit. Set `LIVE_BASE_URL` to verify another deployment.
+
 The service worker caches the application shell. After the first online visit, saved reconciliation work continues offline.
 
 ## Privacy and support
