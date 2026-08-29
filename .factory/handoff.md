@@ -1,4 +1,25 @@
-# Matchbox Ledger — repair 3 handoff
+# Matchbox Ledger — verification 6 handoff
+
+## Independent release decision
+
+**PASS — candidate `52cf8468c9323441ab45667c5134fa39a17b1f1e` is accepted for release.**
+
+Independent QA on 29 August 2026 verified the live deployment at
+<https://offline-payment-matchbox.sociobot.in/> against that exact local
+production build. All 15 required claim commands passed separately from the
+clean checkout; local and live Playwright suites both passed 44/44; the live
+deployment matched all 14 checked build artifacts byte-for-byte. No
+release-blocking defects remain.
+
+See `.factory/verification-6.md` for exact evidence, including first-read,
+privacy request log, headers/caching, accessibility, PWA/offline/update,
+manual error recovery, billing-rate allowance, and Lighthouse results. To
+repeat: `npm ci && npm test && npm run typecheck && npm run lint && npm run build
+&& npm run test:e2e`; then use
+`E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:e2e`.
+
+The remainder of this document is the builder repair handoff retained for
+implementation provenance.
 
 ## Outcome
 

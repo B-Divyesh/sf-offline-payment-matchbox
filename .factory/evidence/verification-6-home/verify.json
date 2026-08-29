@@ -1,0 +1,14 @@
+{
+  "url": "https://offline-payment-matchbox.sociobot.in/",
+  "loadMs": 756,
+  "errors": [],
+  "a11y": {
+    "title": "Matchbox Ledger — match payments to invoices",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 1801
+  }
+}
