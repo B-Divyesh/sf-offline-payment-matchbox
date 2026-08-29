@@ -66,3 +66,9 @@ verification steps recorded in the handoff.
 - Local Lighthouse: Performance 99, Accessibility 100, Best Practices 100,
   SEO 100; FCP 1.0 s, LCP 1.6 s, CLS 0, TBT 80 ms. Report:
   `.factory/evidence/polish-5-lighthouse.json`.
+- Production: `npm run verify:identity` passed; the cold live root and direct
+  demo checks returned 200 with no console/page errors and the same semantic
+  results as local. `E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in
+  npm run test:e2e` passed all 56 tests. Live evidence is in
+  `.factory/evidence/polish-5-live-home/` and
+  `.factory/evidence/polish-5-live-demo/`.
