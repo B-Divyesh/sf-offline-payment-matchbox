@@ -1,25 +1,27 @@
-# Matchbox Ledger handoff — verification 11
+# Matchbox Ledger handoff — adversarial review 6
 
 ## Outcome: PASS
 
-Candidate `79fc49f577846497bfa00c721daf313f62e149aa` is accepted for
-<https://offline-payment-matchbox.sociobot.in/>. It is Matchbox Ledger v1.0.5,
-a local-first PWA for freelancers to match invoice and downloaded-payment CSVs,
-review ambiguous suggestions, confirm/manual-note matches, and export reports.
+Review 6 made no product-code changes. The live product at
+<https://offline-payment-matchbox.sociobot.in/> passed the cold 390 px and
+desktop first-read, direct-demo, sandbox, claims, route, privacy, accessibility
+smoke, copy, history, and visual-identity checks. The complete report is in
+`.factory/review-6.md`.
 
-## What was verified
+## Verification performed
 
-- Clean `npm ci`; all 22 required claim commands passed separately.
-- `npm test` (23 tests), typecheck, lint, production build, full Playwright
-  suite (56/56), and 10-run local demo-isolation race check passed.
-- Live identity resolves to this exact SHA; a 10-run production demo-isolation
-  check passed, clearing the earlier deployment-only report.
-- Live normal, invalid-date recovery, ambiguous-match, CSV export, offline
-  reload, service-worker update, privacy request log, headers/caching, desktop,
-  390 px mobile, keyboard, reduced motion, and Axe checks passed.
-- The Sociobot verification allowance is 30 requests/window; request 31
-  returns 429 with `Retry-After: 4`. No purchase was made; checkout routing
-  returned 303 to the hosted Dodo checkout.
+- Fresh, storage-free browser contexts confirmed the job, audience, and first
+  action before scrolling on both required viewport sizes.
+- `/?demo=1` opened on realistic records with the isolation banner, Reset demo,
+  and Start for real. Reset restored sample data; demo exit removed the banner
+  and sample while retaining a seeded real-storage sentinel.
+- The demo request log contained only same-origin requests.
+- Clean `npm ci`, `npm test` (23 passed), `npm run typecheck`, `npm run lint`,
+  and `npm run build` passed; `dist/` was produced.
+- Every one of the 22 commands in `.factory/claims.json` passed independently
+  against the live release.
+- Live checks confirmed route titles/metadata, one H1/main per route, designed
+  HTTP 404, headers/CSP, and the distinct ceramic-tray visual system.
 
 ## How to verify
 
@@ -29,18 +31,13 @@ npm test
 npm run typecheck
 npm run lint
 npm run build
-npm run test:e2e
-npm run test:demo-isolation
-npm run verify:sw-update
-npm run verify:identity
-E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:demo-isolation
+E2E_BASE_URL=https://offline-payment-matchbox.sociobot.in npm run test:e2e
 ```
 
-Use `https://offline-payment-matchbox.sociobot.in/?demo=1` for the isolated
-sample workspace. Full evidence is in `.factory/verification-11.md`.
+Use <https://offline-payment-matchbox.sociobot.in/?demo=1> for the isolated
+sample workspace.
 
 ## Known gaps / next steps
 
-No known release-blocking gaps. A real payment was intentionally not created;
-the no-purchase checkout route, license boundary, and rate limit were verified
-without external financial action.
+No findings from this review. Keep new visitor-facing claims in the claims
+contract with an observable demo-path test.
